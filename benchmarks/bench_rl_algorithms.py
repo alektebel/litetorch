@@ -74,12 +74,13 @@ def benchmark_dqn():
     #     # Evaluate
     #     rewards = []
     #     for _ in range(10):
-    #         obs = env.reset()
-    #         done = False
+    #         obs, _ = env.reset()
+    #         terminated = False
+    #         truncated = False
     #         total_reward = 0
-    #         while not done:
+    #         while not (terminated or truncated):
     #             action, _ = model.predict(obs)
-    #             obs, reward, done, _ = env.step(action)
+    #             obs, reward, terminated, truncated, _ = env.step(action)
     #             total_reward += reward
     #         rewards.append(total_reward)
     #     return np.mean(rewards)
