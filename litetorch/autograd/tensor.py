@@ -33,7 +33,6 @@ class Tensor():
         if not isinstance(shape, tuple):
             raise Exception("Shape must be a tuple");
         total_entries = prod(shape) if len(shape) > 0 else 1
-        print(total_entries)
         self.data = [0 for _ in range(total_entries)]
         self.shape = shape
         self.dtype = "float32"
