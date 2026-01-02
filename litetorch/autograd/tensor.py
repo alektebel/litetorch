@@ -28,21 +28,23 @@ def flatindex2shapeindex(index:int, shape:tuple, strides:list)->tuple:
 
 
 class Tensor():
-    def __init__(self, data=None, shape, dtype= None):
+    def __init__(self, shape, data=None, dtype=None):
         # shape is the list of dimensions of the tensor
         if not isinstance(shape, tuple):
             raise Exception("Shape must be a tuple");
-        total_entries = prod(shape)
+        total_entries = prod(shape) if len(shape) > 0 else 1
         print(total_entries)
         self.data = [0 for _ in range(total_entries)]
         self.shape = shape
         self.dtype = "float32"
 
-        self.strides = [0 for _ in range(len(shape))]
-        self.strides[-1] = 1
-        # The last dimension has stride 1 (hiperdimensional column)
-        for i in range(len(shape)-2, -1, -1):
-            self.strides[i] = self.strides[i+1] * shape[i+1]
+        self.strides = []
+        if len(shape) > 0:
+            self.strides = [0 for _ in range(len(shape))]
+            self.strides[-1] = 1
+            # The last dimension has stride 1 (hiperdimensional column)
+            for i in range(len(shape)-2, -1, -1):
+                self.strides[i] = self.strides[i+1] * shape[i+1]
         # In order to acces an element at position (i,j,k,...), we do:
         # index = i*strides[0] + j*strides[1] + k*strides[2] + ...
 
@@ -56,15 +58,14 @@ class Tensor():
         stride1 = 0;
         stride2 = 0;
         for i in range(max(len(self.shape), len(other.shape))):
-            if(self.shape[i+stride1] == other.other[i+stride2]):
+            if(self.shape[i+stride1] == other.shape[i+stride2]):
                 continue
             elif self.shape[i] == 1:
                 stride1 += 1
             elif other.shape[i] == 1:
                 stride2 += 1
             elif stride1 * stride2 != 0:
-                raise Exception(f"Incompatible shapes for broadcasting
-                {self.shape} vs {other.shape}")
+                raise Exception(f"Incompatible shapes for broadcasting {self.shape} vs {other.shape}")
             else:
                 raise Exception(f"Incompatible shapes {self.shape} vs {other.shape}")
         # Now we know the shape are compatible for broadcasting or 
@@ -86,7 +87,7 @@ class Tensor():
             for i in range(len(other.data)):
                 tuple_broadcast_index = flatindex2shapeindex(i, other.shape, other.strides)
                 tuple_self_index = [0 for _ in range(len(self.shape))]
-                for j in range(len(self.shape))
+                for j in range(len(self.shape)):
                     if j in broadcast_indices:
                         tuple_self_index[j] = 0
                     else:
@@ -105,7 +106,7 @@ class Tensor():
             for i in range(len(self.data)):
                 tuple_broadcast_index = flatindex2shapeindex(i, self.shape, self.strides)
                 tuple_other_index = [0 for _ in range(len(other.shape))]
-                for j in range(len(other.shape))
+                for j in range(len(other.shape)):
                     if j in broadcast_indices:
                         tuple_other_index[j] = 0
                     else:
@@ -134,27 +135,99 @@ class Tensor():
         pass
     def __mul__(self, other):
         pass
-    def __getitem__(self, *key):
-        if key >= prod(self.shape):
-            raise Exception("Index out of bounds")
+    def __getitem__(self, key):
         # When key is another tensor, we would like to do mask indexing, returning a tensor with only the elements where the mask is true
         if isinstance(key, Tensor):
             # This will be a boolean tensor
             if key.dtype != "bool":
                 raise Exception("Mask indexing requires a boolean tensor")
+            # Return a 1D tensor with elements where mask is True
+            result_data = []
+            for i in range(len(self.data)):
+                if key.data[i]:
+                    result_data.append(self.data[i])
+            result = Tensor(shape=(len(result_data),))
+            result.data = result_data
+            return result
         if isinstance(key, np.ndarray):
+            # Handle numpy array indexing
             pass
-        if len(key) != len(self.shape):
-            raise Exception("Invalid number of indices")
-        # Key is a tuple of indices, one perdimension
-        # Normal indexing
+        # Handle tuple indexing
         if isinstance(key, tuple):
-            return self.data[sum([k*s for (k,s) in zip(key, self.strides)])]
-    def __setitem__(self, *key, value):
-        if key >= prod(self.shape):
-            raise Exception("Index out of bounds")
-        self.data[sum([k*s for (k,s) in zip(key, self.strides)])] = value
-        return
+            # Normalize negative indices
+            normalized_key = []
+            for i, k in enumerate(key):
+                if k < 0:
+                    normalized_key.append(self.shape[i] + k)
+                else:
+                    normalized_key.append(k)
+            # Check bounds
+            for i, k in enumerate(normalized_key):
+                if k < 0 or k >= self.shape[i]:
+                    raise Exception("Index out of bounds")
+            if len(key) != len(self.shape):
+                raise Exception("Invalid number of indices")
+            return self.data[sum([k*s for (k,s) in zip(normalized_key, self.strides)])]
+        # Handle single integer index
+        if isinstance(key, int):
+            if len(self.shape) == 0:
+                raise Exception("Cannot index scalar tensor")
+            # Normalize negative index
+            if key < 0:
+                key = self.shape[0] + key
+            if key < 0 or key >= self.shape[0]:
+                raise Exception("Index out of bounds")
+            # Return a tensor with the remaining dimensions
+            if len(self.shape) == 1:
+                return self.data[key]
+            else:
+                # Return a view/slice along the first dimension
+                start = key * self.strides[0]
+                end = start + self.strides[0]
+                result_shape = self.shape[1:]
+                result = Tensor(shape=result_shape)
+                result.data = self.data[start:end]
+                return result
+        return None
+    def __setitem__(self, key, value):
+        # Handle tuple indexing
+        if isinstance(key, tuple):
+            # Normalize negative indices
+            normalized_key = []
+            for i, k in enumerate(key):
+                if k < 0:
+                    normalized_key.append(self.shape[i] + k)
+                else:
+                    normalized_key.append(k)
+            # Check bounds
+            for i, k in enumerate(normalized_key):
+                if k < 0 or k >= self.shape[i]:
+                    raise Exception("Index out of bounds")
+            if len(key) != len(self.shape):
+                raise Exception("Invalid number of indices")
+            self.data[sum([k*s for (k,s) in zip(normalized_key, self.strides)])] = value
+            return
+        # Handle single integer index
+        if isinstance(key, int):
+            if len(self.shape) == 0:
+                raise Exception("Cannot index scalar tensor")
+            # Normalize negative index
+            if key < 0:
+                key = self.shape[0] + key
+            if key < 0 or key >= self.shape[0]:
+                raise Exception("Index out of bounds")
+            if len(self.shape) == 1:
+                self.data[key] = value
+            else:
+                # Set all elements in the slice
+                start = key * self.strides[0]
+                end = start + self.strides[0]
+                if isinstance(value, Tensor):
+                    self.data[start:end] = value.data
+                else:
+                    for i in range(start, end):
+                        self.data[i] = value
+            return
     def reshape(self, other):
         pass
     def T(self):

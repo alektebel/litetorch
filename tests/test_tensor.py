@@ -239,12 +239,12 @@ class TestTensorIndexing(unittest.TestCase):
     """Test tensor indexing operations."""
     
     def test_tensor_getitem_not_implemented(self):
-        """Test that __getitem__ is not yet implemented."""
+        """Test that __getitem__ is now implemented for basic indexing."""
         t = Tensor(shape=(2, 3))
         
         result = t[0]
-        # Currently returns None (not implemented)
-        self.assertIsNone(result)
+        # Now returns a Tensor with the slice
+        self.assertIsInstance(result, Tensor)
     
     def test_tensor_setitem_not_implemented(self):
         """Test that __setitem__ is not yet implemented."""
