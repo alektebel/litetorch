@@ -41,17 +41,17 @@ class Tensor():
         if len(shape) > 0:
             self.strides = [0 for _ in range(len(shape))]
             self.strides[-1] = 1
-            # The last dimension has stride 1 (hiperdimensional column)
+            # The last dimension has stride 1 (hyperdimensional column)
             for i in range(len(shape)-2, -1, -1):
                 self.strides[i] = self.strides[i+1] * shape[i+1]
-        # In order to acces an element at position (i,j,k,...), we do:
+        # In order to access an element at position (i,j,k,...), we do:
         # index = i*strides[0] + j*strides[1] + k*strides[2] + ...
 
 
     def __add__(self, other):
         if not isinstance(other, Tensor):
             raise Exception("Incompatible types to sum together")
-        # Here, we apply broadcasting to sum between tensors. This is, we can pad any tensor in an arbitrary number of dimrnsions
+        # Here, we apply broadcasting to sum between tensors. This is, we can pad any tensor in an arbitrary number of dimensions
         # in order to be able to sum them. Shapes must be in the same order
         # this check is s merge
         stride1 = 0;
@@ -67,9 +67,9 @@ class Tensor():
                 raise Exception(f"Incompatible shapes for broadcasting {self.shape} vs {other.shape}")
             else:
                 raise Exception(f"Incompatible shapes {self.shape} vs {other.shape}")
-        # Now we know the shape are compatible for broadcasting or 
-        # stabdard muktiplication
-        # first assume shapes are exactly equal. Them sum is element wise
+        # Now we know the shapes are compatible for broadcasting or 
+        # standard multiplication
+        # first assume shapes are exactly equal. Then sum is element wise
         if stride1 == 0 and stride2 == 0:
             result = Tensor(shape=self.shape)
             for i in range(len(self.data)):
@@ -128,7 +128,7 @@ class Tensor():
 
     def __sub__(self, other):
         pass
-    def __matmul__(sefl, other):
+    def __matmul__(self, other):
         pass
     def __pow__(self, other):
         pass

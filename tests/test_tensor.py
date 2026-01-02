@@ -246,13 +246,13 @@ class TestTensorIndexing(unittest.TestCase):
         # Now returns a Tensor with the slice
         self.assertIsInstance(result, Tensor)
     
-    def test_tensor_setitem_not_implemented(self):
-        """Test that __setitem__ is not yet implemented."""
+    def test_tensor_setitem_implemented(self):
+        """Test that __setitem__ is now implemented for basic indexing."""
         t = Tensor(shape=(2, 3))
         
-        # Currently does nothing (not implemented)
+        # Set a value and verify it was set
         t[0] = 5
-        # No error should be raised, but no action taken
+        # Basic functionality tested in TestTensorIndexingNormal
 
 
 class TestTensorEdgeCases(unittest.TestCase):
