@@ -49,15 +49,23 @@ class Tensor():
 
 
     def __add__(self, other):
-        if not isinstance(other, Tensor):
-            raise Exception("Incompatible types to sum together")
+        
+        if isinstance(other, (int, float)):
+            # Scalar addition
+            result = Tensor(shape=self.shape)
+            for i in range(len(self.data)):
+                result.data[i] = self.data[i] + other
+            return result
+
         # Here, we apply broadcasting to sum between tensors. This is, we can pad any tensor in an arbitrary number of dimensions
         # in order to be able to sum them. Shapes must be in the same order
         # this check is s merge
         stride1 = 0;
         stride2 = 0;
+        if len(self.shape) != len(other.shape):
+            raise Exception(f"Incompatible shapes for broadcasting {self.shape} vs {other.shape}")
         for i in range(max(len(self.shape), len(other.shape))):
-            if(self.shape[i+stride1] == other.shape[i+stride2]):
+            if(self.shape[i] == other.shape[i]):
                 continue
             elif self.shape[i] == 1:
                 stride1 += 1
@@ -117,6 +125,11 @@ class Tensor():
             return result
         else:
             raise Exception("Broadcasting for both tensors not implemented yet")
+
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
 
     def clone(self):
         result = Tensor(shape=self.shape)

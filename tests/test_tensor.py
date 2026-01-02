@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from litetorch.autograd.tensor import Tensor
+from litetorch.tensor import Tensor
 
 
 class TestTensorCreation(unittest.TestCase):
@@ -100,12 +100,6 @@ class TestTensorAddition(unittest.TestCase):
         for val in result.data:
             self.assertEqual(val, 0)
     
-    def test_tensor_addition_incompatible_types(self):
-        """Test that adding incompatible types raises an exception."""
-        t = Tensor(shape=(2, 2))
-        with self.assertRaises(Exception) as context:
-            result = t + 5
-        self.assertIn("Incompatible types", str(context.exception))
     
     def test_tensor_addition_incompatible_shapes(self):
         """Test that adding incompatible shapes raises an exception."""
@@ -115,6 +109,62 @@ class TestTensorAddition(unittest.TestCase):
         with self.assertRaises((Exception, IndexError)):
             result = t1 + t2
 
+    def test_tensor_addition_scalar(self):
+        """Test adding a scalar-like tensor (shape ()) to another tensor."""
+        t2 = Tensor(shape=(2, 2))
+        
+        t2.data = [1, 2, 3, 4]
+        
+        result = 10 + t2
+        self.assertEqual(result.shape, (2, 2))
+        self.assertEqual(result.data, [11, 12, 13, 14])
+
+    def test_tensor_broadcasting_addition(self):
+        """Test adding tensors with broadcasting."""
+        t1 = Tensor(shape=(1, 3))
+        t2 = Tensor(shape=(2, 3))
+        
+        t1.data = [10, 20, 30]
+        t2.data = [1, 2, 3, 4, 5, 6]
+        
+        result = t1 + t2
+        self.assertEqual(result.shape, (2, 3))
+        self.assertEqual(result.data, [11, 22, 33, 14, 25, 36])
+    
+    def test_tensor_broadcasting_addition_heavy(self):
+        """Test adding tensors with more complex broadcasting."""
+        t1 = Tensor(shape=(1, 1, 3))
+        t2 = Tensor(shape=(2, 2, 3))
+        
+        t1.data = [100, 200, 300]
+        t2.data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        
+        result = t1 + t2
+        self.assertEqual(result.shape, (2, 2, 3))
+        expected = [101, 202, 303, 104, 205, 306,
+                    107, 208, 309, 110, 211, 312]
+        self.assertEqual(result.data, expected)
+
+
+    def test_tensor_addition_incompatible_broadcasting(self):
+        """Test that adding tensors with incompatible broadcasting raises an exception."""
+        t1 = Tensor(shape=(2, 3))
+        t2 = Tensor(shape=(3, 2))
+        
+        with self.assertRaises((Exception, IndexError)):
+            result = t1 + t2
+    
+    def test_tensor_addition_broadcasting_vector(self):
+        """Test adding a 1D tensor to a 2D tensor with broadcasting."""
+        t1 = Tensor(shape=(1, 3))
+        t2 = Tensor(shape=(2, 3))
+        
+        t1.data = [10, 20, 30]
+        t2.data = [1, 2, 3, 4, 5, 6]
+        
+        result = t1 + t2
+        self.assertEqual(result.shape, (2, 3))
+        self.assertEqual(result.data, [11, 22, 33, 14, 25, 36])
 
 class TestTensorSubtraction(unittest.TestCase):
     """Test tensor subtraction operations."""
@@ -254,6 +304,97 @@ class TestTensorIndexing(unittest.TestCase):
         t[0] = 5
         # Basic functionality tested in TestTensorIndexingNormal
 
+    def test_tensor_indexing_multiple_dims(self):
+        """Test that indexing with multiple dimensions is now implemented."""
+        t = Tensor(shape=(2, 3, 4))
+        t.data = list(range(24))  # Fill with values 0 to 23        
+        result = t[0, 1, 2]
+        self.assertEqual(result, 6)  # 0*12 + 1*4 + 2 = 6
+        # Now returns a Tensor with the slice
+
+
+    def test_tensor_indexing_slice(self):
+        """Test that indexing with slices is now implemented."""
+        t = Tensor(shape=(5,))
+        t.data = [10, 20, 30, 40, 50]
+        
+        result = t[1:4]
+        self.assertIsInstance(result, Tensor)
+        self.assertEqual(result.shape, (3,))
+        self.assertEqual(result.data, [20, 30, 40])
+        # Now returns a Tensor with the slice
+
+    def test_tensor_indexing_ellipsis(self):
+        """Test that indexing with ellipsis is now implemented."""
+        t = Tensor(shape=(2, 3, 4))
+        t.data = list(range(24))
+        result = t[..., 2]
+        self.assertIsInstance(result, Tensor)
+        self.assertEqual(result.shape, (2, 3))
+        expected = [2, 6, 10, 14, 18, 22]
+        self.assertEqual(result.data, expected)
+
+    def test_tensor_negative_indexing(self):
+        """Test that negative indexing is now implemented."""
+        t = Tensor(shape=(5,))
+        t.data = [10, 20, 30, 40, 50]
+        
+        result = t[-1]
+        self.assertEqual(result, 50)
+        # Now returns the correct value
+
+    def test_tensor_indexing_out_of_bounds(self):
+        """Test that out of bounds indexing raises an exception."""
+        t = Tensor(shape=(3,))
+        
+        with self.assertRaises(Exception) as context:
+            _ = t[3]
+        self.assertIn("out of bounds", str(context.exception).lower())
+        # Now raises an appropriate exception
+
+    def test_tensor_mask_indexing_not_implemented(self):
+        """Test that mask indexing is not yet implemented."""
+        t = Tensor(shape=(5,))
+        mask = Tensor(shape=(5,))
+        
+        result = t[mask]
+        # Currently returns None (not implemented)
+        self.assertIsNone(result)
+
+    def test_tensor_mask_indexing(self):
+        """Test that mask indexing is now implemented."""
+        t = Tensor(shape=(5,))
+        t.data = [10, 20, 30, 40, 50]
+        
+        mask = Tensor(shape=(5,))
+        mask.data = [True, False, True, False, True]
+        mask.dtype = "bool"
+        
+        result = t[mask]
+        self.assertIsInstance(result, Tensor)
+        self.assertEqual(result.shape, (3,))
+        self.assertEqual(result.data, [10, 30, 50])
+        # Now returns the correct masked tensor
+
+    def test_tensor_indexing_multidimensinal_mask(self):
+        """Test that multidimensional mask indexing is now implemented."""
+        t = Tensor(shape=(2, 2,3,4))
+        t.data = list(range(48))  # Fill with values 0 to 47
+        
+        mask = Tensor(shape=(2,2,3,4))
+        mask.data = [True, False, False, False,
+                      False, True, False, False,
+                        False, False, True, False,
+                        False, False, False, True,
+                        True, False, False, False,
+                        False, True, False, False,]
+        mask.dtype = "bool"
+        
+        result = t[mask]
+        self.assertIsInstance(result, Tensor)
+        self.assertEqual(result.shape, (6,))
+        self.assertEqual(result.data, [0, 5, 10, 15, 24, 29])
+        # Now returns the correct masked tensor
 
 class TestTensorEdgeCases(unittest.TestCase):
     """Test tensor edge cases and boundary conditions."""
@@ -583,7 +724,7 @@ class TestTensorHelperFunctions(unittest.TestCase):
     
     def test_flatindex2shapeindex_1d(self):
         """Test flatindex2shapeindex with 1D tensor."""
-        from litetorch.autograd.tensor import flatindex2shapeindex
+        from litetorch.tensor import flatindex2shapeindex
         
         shape = (5,)
         strides = [1]
@@ -594,7 +735,7 @@ class TestTensorHelperFunctions(unittest.TestCase):
     
     def test_flatindex2shapeindex_2d(self):
         """Test flatindex2shapeindex with 2D tensor."""
-        from litetorch.autograd.tensor import flatindex2shapeindex
+        from litetorch.tensor import flatindex2shapeindex
         
         shape = (2, 3)
         strides = [3, 1]
@@ -606,7 +747,7 @@ class TestTensorHelperFunctions(unittest.TestCase):
     
     def test_flatindex2shapeindex_out_of_bounds(self):
         """Test flatindex2shapeindex with out of bounds index."""
-        from litetorch.autograd.tensor import flatindex2shapeindex
+        from litetorch.tensor import flatindex2shapeindex
         
         shape = (2, 3)
         strides = [3, 1]
@@ -617,7 +758,7 @@ class TestTensorHelperFunctions(unittest.TestCase):
     
     def test_zeros_factory(self):
         """Test zeros factory function."""
-        from litetorch.autograd.tensor import zeros
+        from litetorch.tensor import zeros
         
         t = zeros(shape=(2, 3))
         self.assertEqual(t.shape, (2, 3))
@@ -627,7 +768,7 @@ class TestTensorHelperFunctions(unittest.TestCase):
     
     def test_ones_factory(self):
         """Test ones factory function."""
-        from litetorch.autograd.tensor import ones
+        from litetorch.tensor import ones
         
         t = ones(shape=(2, 3))
         self.assertEqual(t.shape, (2, 3))
