@@ -17,8 +17,8 @@ class Tensor():
         if not isinstance(other, Tensor):
             raise Exception("Incompatible types to sum together")
         # Here, we apply broadcasting to sum between tensors. This is, we can pad any tensor in an arbitrary number of dimensions
-        # in order to be able to sum them. Shapes must be in the same order
-        # this check is s merge
+        # in order to be able to sum them. Shapes must be in the same order.
+        # This check validates shape compatibility for broadcasting.
         stride1 = 0;
         stride2 = 0;
         for i in range(max(len(self.shape), len(other.shape))):
@@ -32,9 +32,9 @@ class Tensor():
                 raise Exception(f"Incompatible shapes for broadcasting {self.shape} vs {other.shape}")
             else:
                 raise Exception(f"Incompatible shapes {self.shape} vs {other.shape}")
-        # Now we know the shape are compatible for broadcasting or 
+        # Now we know the shapes are compatible for broadcasting or 
         # standard multiplication
-        # first assume shapes are exactly equal. Them sum is element wise
+        # first assume shapes are exactly equal. Then sum is element wise
         if stride1 == 0 and stride2 == 0:
             result = Tensor(shape=self.shape)
             for i in range(len(self.data)):
