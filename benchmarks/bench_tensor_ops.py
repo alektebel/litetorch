@@ -109,13 +109,15 @@ def benchmark_tensor_addition():
     t1_small.data = [i for i in range(100)]
     t2_small.data = [i*2 for i in range(100)]
     
+    if PYTORCH_AVAILABLE:
+        pt1_small = torch.randn(10, 10)
+        pt2_small = torch.randn(10, 10)
+    
     def litetorch_add_small():
         result = t1_small + t2_small
     
     def pytorch_add_small():
-        a = torch.randn(10, 10)
-        b = torch.randn(10, 10)
-        c = a + b
+        c = pt1_small + pt2_small
     
     benchmark_operation("Small Addition (10x10)", litetorch_add_small, pytorch_add_small, iterations=5000)
     
@@ -125,13 +127,15 @@ def benchmark_tensor_addition():
     t1_med.data = [i for i in range(2500)]
     t2_med.data = [i*2 for i in range(2500)]
     
+    if PYTORCH_AVAILABLE:
+        pt1_med = torch.randn(50, 50)
+        pt2_med = torch.randn(50, 50)
+    
     def litetorch_add_medium():
         result = t1_med + t2_med
     
     def pytorch_add_medium():
-        a = torch.randn(50, 50)
-        b = torch.randn(50, 50)
-        c = a + b
+        c = pt1_med + pt2_med
     
     benchmark_operation("Medium Addition (50x50)", litetorch_add_medium, pytorch_add_medium, iterations=1000)
     
@@ -141,13 +145,15 @@ def benchmark_tensor_addition():
     t1_large.data = [i for i in range(10000)]
     t2_large.data = [i*2 for i in range(10000)]
     
+    if PYTORCH_AVAILABLE:
+        pt1_large = torch.randn(100, 100)
+        pt2_large = torch.randn(100, 100)
+    
     def litetorch_add_large():
         result = t1_large + t2_large
     
     def pytorch_add_large():
-        a = torch.randn(100, 100)
-        b = torch.randn(100, 100)
-        c = a + b
+        c = pt1_large + pt2_large
     
     benchmark_operation("Large Addition (100x100)", litetorch_add_large, pytorch_add_large, iterations=500)
 
@@ -280,17 +286,19 @@ def benchmark_edge_cases():
     t1.data = [i for i in range(400)]
     t2.data = [i*2 for i in range(400)]
     
+    if PYTORCH_AVAILABLE:
+        pt_a = torch.randn(20, 20)
+        pt_b = torch.randn(20, 20)
+    
     def litetorch_sequential_ops():
         r1 = t1 + t2
         r2 = r1 + t1
         r3 = r2 + t2
     
     def pytorch_sequential_ops():
-        a = torch.randn(20, 20)
-        b = torch.randn(20, 20)
-        r1 = a + b
-        r2 = r1 + a
-        r3 = r2 + b
+        r1 = pt_a + pt_b
+        r2 = r1 + pt_a
+        r3 = r2 + pt_b
     
     benchmark_operation("Sequential Additions (20x20)", litetorch_sequential_ops, pytorch_sequential_ops, iterations=1000)
 

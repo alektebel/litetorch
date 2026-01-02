@@ -2,7 +2,6 @@
 
 
 
-import numpy as np
 import math
 
 class Tensor():
@@ -17,7 +16,7 @@ class Tensor():
     def __add__(self, other):
         if not isinstance(other, Tensor):
             raise Exception("Incompatible types to sum together")
-        # Here, we apply broadcasting to sum between tensors. This is, we can pad any tensor in an arbitrary number of dimrnsions
+        # Here, we apply broadcasting to sum between tensors. This is, we can pad any tensor in an arbitrary number of dimensions
         # in order to be able to sum them. Shapes must be in the same order
         # this check is s merge
         stride1 = 0;
@@ -34,7 +33,7 @@ class Tensor():
             else:
                 raise Exception(f"Incompatible shapes {self.shape} vs {other.shape}")
         # Now we know the shape are compatible for broadcasting or 
-        # stabdard muktiplication
+        # standard multiplication
         # first assume shapes are exactly equal. Them sum is element wise
         if stride1 == 0 and stride2 == 0:
             result = Tensor(shape=self.shape)
