@@ -6,12 +6,11 @@ import numpy as np
 import math
 
 class Tensor():
-    def __init__(self, data=None, shape, dtype= None):
+    def __init__(self, shape, data=None, dtype=None):
         # shape is the list of dimensions of the tensor
         if not isinstance(shape, tuple):
             raise Exception("Shape must be a tuple");
-        total_entries = prod(shape)
-        print(total_entries)
+        total_entries = math.prod(shape)
         self.data = [0 for _ in range(total_entries)]
         self.shape = shape
         self.dtype = "float32"
@@ -24,15 +23,14 @@ class Tensor():
         stride1 = 0;
         stride2 = 0;
         for i in range(max(len(self.shape), len(other.shape))):
-            if(self.shape[i+stride1] == other.other[i+stride2]):
+            if(self.shape[i+stride1] == other.shape[i+stride2]):
                 continue
             elif self.shape[i] == 1:
                 stride1 += 1
             elif other.shape[i] == 1:
                 stride2 += 1
             elif stride1 * stride2 != 0:
-                raise Exception(f"Incompatible shapes for broadcasting
-                {self.shape} vs {other.shape}")
+                raise Exception(f"Incompatible shapes for broadcasting {self.shape} vs {other.shape}")
             else:
                 raise Exception(f"Incompatible shapes {self.shape} vs {other.shape}")
         # Now we know the shape are compatible for broadcasting or 
@@ -49,7 +47,7 @@ class Tensor():
 
     def __sub__(self, other):
         pass
-    def __matmul__(sefl, other):
+    def __matmul__(self, other):
         pass
     def __pow__(self, other):
         pass
