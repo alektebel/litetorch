@@ -508,19 +508,19 @@ class TestTensorIndexingNormal(unittest.TestCase):
         t = Tensor(shape=(2, 3))
         t.data = [1, 2, 3, 4, 5, 6]
         
-        self.assertEqual(t[(0, 0)], 1)
-        self.assertEqual(t[(0, 2)], 3)
-        self.assertEqual(t[(1, 0)], 4)
-        self.assertEqual(t[(1, 2)], 6)
+        self.assertEqual(t[0, 0], 1)
+        self.assertEqual(t[0, 2], 3)
+        self.assertEqual(t[1, 0], 4)
+        self.assertEqual(t[1, 2], 6)
     
     def test_indexing_3d_single_element(self):
         """Test indexing a single element from 3D tensor."""
         t = Tensor(shape=(2, 2, 2))
         t.data = [1, 2, 3, 4, 5, 6, 7, 8]
         
-        self.assertEqual(t[(0, 0, 0)], 1)
-        self.assertEqual(t[(0, 0, 1)], 2)
-        self.assertEqual(t[(1, 1, 1)], 8)
+        self.assertEqual(t[0, 0, 0], 1)
+        self.assertEqual(t[0, 0, 1], 2)
+        self.assertEqual(t[1, 1, 1], 8)
     
     def test_indexing_2d_row_slice(self):
         """Test indexing a row from 2D tensor."""
@@ -550,9 +550,9 @@ class TestTensorIndexingNormal(unittest.TestCase):
     def test_setitem_2d(self):
         """Test setting a single element in 2D tensor."""
         t = Tensor(shape=(2, 3))
-        t[(0, 0)] = 1
-        t[(0, 2)] = 3
-        t[(1, 1)] = 5
+        t[0, 0] = 1
+        t[0, 2] = 3
+        t[1, 1] = 5
         
         self.assertEqual(t.data[0], 1)
         self.assertEqual(t.data[2], 3)
@@ -576,10 +576,10 @@ class TestTensorIndexingNegative(unittest.TestCase):
         t = Tensor(shape=(2, 3))
         t.data = [1, 2, 3, 4, 5, 6]
         
-        self.assertEqual(t[(-1, -1)], 6)
-        self.assertEqual(t[(-2, -3)], 1)
-        self.assertEqual(t[(0, -1)], 3)
-        self.assertEqual(t[(-1, 0)], 4)
+        self.assertEqual(t[-1, -1], 6)
+        self.assertEqual(t[-2, -3], 1)
+        self.assertEqual(t[0, -1], 3)
+        self.assertEqual(t[-1, 0], 4)
     
     def test_negative_index_setitem_1d(self):
         """Test setting element with negative index in 1D tensor."""
@@ -593,12 +593,19 @@ class TestTensorIndexingNegative(unittest.TestCase):
     def test_negative_index_setitem_2d(self):
         """Test setting element with negative index in 2D tensor."""
         t = Tensor(shape=(2, 3))
-        t[(-1, -1)] = 99
-        t[(-2, -3)] = 11
+        t[-1, -1] = 99
+        t[-2, -3] = 11
         
         self.assertEqual(t.data[5], 99)
         self.assertEqual(t.data[0], 11)
 
+
+    def test_slicing(self):
+         t = Tensor(shape=(2,2))
+         t.data = [1,2,3,4]
+         sliced = t[:,0]
+
+         self.assertEqual(sliced.data, [1,2])
 
 class TestTensorIndexingOutOfBounds(unittest.TestCase):
     """Test tensor indexing with out of bounds indices."""
@@ -628,11 +635,11 @@ class TestTensorIndexingOutOfBounds(unittest.TestCase):
         t = Tensor(shape=(2, 3))
         
         with self.assertRaises(Exception) as context:
-            _ = t[(2, 0)]
+            _ = t[2, 0]
         self.assertIn("out of bounds", str(context.exception).lower())
         
         with self.assertRaises(Exception) as context:
-            _ = t[(0, 3)]
+            _ = t[0, 3]
         self.assertIn("out of bounds", str(context.exception).lower())
     
     def test_out_of_bounds_setitem(self):
