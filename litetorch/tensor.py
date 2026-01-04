@@ -162,6 +162,11 @@ class Tensor():
 
     def __getitem__(self, key):
         # When key is another tensor, we would like to do mask indexing, returning a tensor with only the elements where the mask is true
+        
+        if isinstance(key, slice):
+            # Reuse logic for tuple indexing
+            return self.__getitem__((key,))
+
         if isinstance(key, Tensor):
             # This will be a boolean tensor
             if key.dtype != "bool":
