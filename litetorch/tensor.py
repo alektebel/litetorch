@@ -13,7 +13,10 @@ def zeros(shape, dtype="float32"):
 def ones(shape, dtype="float32"):
     t = Tensor(shape=shape, dtype=dtype)
     for i in range(len(t.data)):
-        t.data[i] = 1
+        if dtype == "float32" or dtype == "int32":
+            t.data[i] = 1
+        if dtype == "bool":
+            t.data[i] = True
     return t
 
 def flatindex2shapeindex(index:int, shape:tuple, strides:list)->tuple:
@@ -147,6 +150,16 @@ class Tensor():
         pass
     def __mul__(self, other):
         pass
+
+
+    def __eq__(self, other):
+        if isinstance(other, (int, float)):
+            # Scalar comparison
+            result = Tensor(shape=self.shape, dtype="bool")
+            for i in range(len(self.data)):
+                result.data[i] = (self.data[i] == other)
+            return result
+
     def __getitem__(self, key):
         # When key is another tensor, we would like to do mask indexing, returning a tensor with only the elements where the mask is true
         if isinstance(key, Tensor):
@@ -154,32 +167,99 @@ class Tensor():
             if key.dtype != "bool":
                 raise Exception("Mask indexing requires a boolean tensor")
             # Return a 1D tensor with elements where mask is True
+            if key.shape != self.shape:
+                raise Exception("Mask tensor must have the same shape as the tensor being indexed")
+
             result_data = []
+            # compute the resulting shape of key
+
             for i in range(len(self.data)):
                 if key.data[i]:
+
                     result_data.append(self.data[i])
             result = Tensor(shape=(len(result_data),))
             result.data = result_data
             return result
+
         if isinstance(key, np.ndarray):
             # Handle numpy array indexing
-            pass
+            if key.dtype != np.bool_:
+                raise Exception("Numpy mask indexing requires a boolean array")
+            # Almost exactly same case as Tensor
+
+
+        # Handle : indexing
+        
         # Handle tuple indexing
         if isinstance(key, tuple):
-            # Normalize negative indices
+            if isinstance(key, int) and len(key) == 1:
+                # When is a single integer, we assume it's indexing the first dimension
+
+                if key[0] < 0:
+                    key = (self.shape[0] + key[0],)
+                result = Tensor(shape=())
+                result_shape = self.shape
+                result_shape[0] = 1
+                result.shape = tuple(result_shape)
+                result.data = [k*self.strides[0] for k in range(self.shape[0])]
+                return result
+            # Normalize negative indices 
             normalized_key = []
             for i, k in enumerate(key):
-                if k < 0:
-                    normalized_key.append(self.shape[i] + k)
+                if isinstance(k, int):
+                    if k< 0:
+                        normalized_key.append(self.shape[i] + k)
+                    else:
+                        normalized_key.append(k)
+                elif isinstance(k, slice):
+                    slices = range(*k.indices(self.shape[i]))
+                    normalized_key.append(slices)
+                elif k is Ellipsis:
+                    raise Exception("Ellipsis indexing not implemented yet")
+                    if i < len(key) - 1:
+                        limit = key[i+1]
+                    normalized_key.extend([range(self.shape[j]) for j in range(i, len(self.shape)-len(key)+i+1)])
+                    normalized_key[i:limit] = [range(self.shape[i]) for i in self.shape[i:]]
                 else:
                     normalized_key.append(k)
             # Check bounds
             for i, k in enumerate(normalized_key):
-                if k < 0 or k >= self.shape[i]:
-                    raise Exception("Index out of bounds")
+                if isinstance(k, int):
+                    if k < 0 or k >= self.shape[i]:
+                        raise Exception("Index out of bounds")
             if len(key) != len(self.shape):
                 raise Exception("Invalid number of indices")
-            return self.data[sum([k*s for (k,s) in zip(normalized_key, self.strides)])]
+
+            result = Tensor(shape=())
+            result_shape = []
+            for k in normalized_key:
+                if isinstance(k, range):
+                    result_shape.append(len(k))
+                else:
+                    result_shape.append(1)
+            result.shape = tuple(result_shape)
+            result.strides = []
+            if len(result_shape) > 0:
+                result.strides = [0 for _ in range(len(result_shape))]
+                result.strides[-1] = 1
+                for i in range(len(result_shape)-2, -1, -1):
+                    result.strides[i] = result.strides[i+1] * result_shape[i+1]
+            
+            result.data = [0 for _ in range(prod(result_shape))]
+            # Now fill result.data
+
+            for i in range(len(result.data)):
+                shape_index = flatindex2shapeindex(i, result_shape, result.strides)
+                original_index = []
+                for dim in range(len(shape_index)):
+                    if isinstance(normalized_key[dim], range):
+                        original_index.append(list(normalized_key[dim])[shape_index[dim]])
+                    else:
+                        original_index.append(normalized_key[dim])
+                flat_original_index = sum([k*s for (k,s) in zip(original_index, self.strides)])
+                result.data[i] = self.data[flat_original_index]
+            return result
+
         # Handle single integer index
         if isinstance(key, int):
             if len(self.shape) == 0:
@@ -207,17 +287,61 @@ class Tensor():
             # Normalize negative indices
             normalized_key = []
             for i, k in enumerate(key):
-                if k < 0:
-                    normalized_key.append(self.shape[i] + k)
+                if isinstance(k, int):
+                    if k< 0:
+                        normalized_key.append(self.shape[i] + k)
+                    else:
+                        normalized_key.append(k)
+                elif k is Ellipsis:
+                    normalized_keys[i:] = [range(self.shape[i]) for i in self.shape[i:]]
+                elif isinstance(k, slice):
+                    normalized_key.append(range(*k.indices(self.shape[i])))
                 else:
                     normalized_key.append(k)
             # Check bounds
             for i, k in enumerate(normalized_key):
                 if k < 0 or k >= self.shape[i]:
                     raise Exception("Index out of bounds")
-            if len(key) != len(self.shape):
-                raise Exception("Invalid number of indices")
-            self.data[sum([k*s for (k,s) in zip(normalized_key, self.strides)])] = value
+            if isinstance(value, Tensor):
+                # Check that value shape matches the slice shape
+                slice_shape = []
+                for k in normalized_key:
+                    if isinstance(k, range):
+                        slice_shape.append(len(k))
+                    else:
+                        slice_shape.append(1)
+                if tuple(slice_shape) != value.shape:
+                    raise Exception("Shape of value does not match shape of slice")
+                # Now set the values
+                for i in range(len(value.data)):
+                    shape_index = flatindex2shapeindex(i, value.shape, value.strides)
+                    original_index = []
+                    for dim in range(len(shape_index)):
+                        if isinstance(normalized_key[dim], range):
+                            original_index.append(list(normalized_key[dim])[shape_index[dim]])
+                        else:
+                            original_index.append(normalized_key[dim])
+                    flat_original_index = sum([k*s for (k,s) in zip(original_index, self.strides)])
+                    self.data[flat_original_index] = value.data[i]
+                return
+            if isinstance(value, (int, float, bool)):
+                # Set all elements in the slice to value
+                # Generate all indices in the slice
+                def generate_indices(ranges, current_index, all_indices):
+                    if len(current_index) == len(ranges):
+                        all_indices.append(current_index.copy())
+                        return
+                    for i in ranges[len(current_index)]:
+                        current_index.append(i)
+                        generate_indices(ranges, current_index, all_indices)
+                        current_index.pop()
+                all_indices = []
+                generate_indices([k if isinstance(k, range) else [k] for k in normalized_key], [], all_indices)
+                for index in all_indices:
+                    flat_index = sum([k*s for (k,s) in zip(index, self.strides)])
+                    self.data[flat_index] = value
+                return
+            raise Exception("Value must be a scalar or a tensor")
             return
         # Handle single integer index
         if isinstance(key, int):
