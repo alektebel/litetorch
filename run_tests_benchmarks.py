@@ -209,6 +209,7 @@ def cmd_install():
         return code
     
     print_info("Installing optional benchmarking dependencies...")
+    # Note: PyTorch CPU URL may need updates. Check https://pytorch.org for latest.
     code = run_command("pip install torch --index-url https://download.pytorch.org/whl/cpu")
     if code != 0:
         print_error("Failed to install PyTorch (optional)")

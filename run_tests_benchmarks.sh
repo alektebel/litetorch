@@ -105,7 +105,7 @@ case $COMMAND in
         print_info "Installing required packages..."
         pip install -e .
         print_info "Installing optional benchmarking dependencies..."
-        pip install torch --index-url https://download.pytorch.org/whl/cpu 2>/dev/null || print_error "Failed to install PyTorch (optional)"
+        pip install torch --index-url https://download.pytorch.org/whl/cpu || print_error "Failed to install PyTorch (optional)"
         print_success "Installation completed!"
         ;;
     
