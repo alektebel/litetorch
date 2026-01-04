@@ -29,6 +29,9 @@ def flatindex2shapeindex(index:int, shape:tuple, strides:list)->tuple:
         index = index % strides[i]
     return tuple(result)
 
+def shapeindex2flatindex(index: tuple, shape:tuple, strides:list)->int:
+    ''' Guven a shape index, returns the flat index '''
+    return sum([ind*s for (ind, s) in zip(index, strides)])
 
 class Tensor():
     def __init__(self, shape, data=None, dtype=None):
@@ -162,11 +165,6 @@ class Tensor():
 
     def __getitem__(self, key):
         # When key is another tensor, we would like to do mask indexing, returning a tensor with only the elements where the mask is true
-        
-        if isinstance(key, slice):
-            # Reuse logic for tuple indexing
-            return self.__getitem__((key,))
-
         if isinstance(key, Tensor):
             # This will be a boolean tensor
             if key.dtype != "bool":
@@ -369,10 +367,43 @@ class Tensor():
                     for i in range(start, end):
                         self.data[i] = value
             return
-    def reshape(self, other):
-        pass
+    def reshape(self, new_shape):
+        if(prod(new_shape) != prod(self.shape)):
+            raise Exception("Total number of elements must remain the same in reshape")
+        result = Tensor(shape=new_shape)
+        result.data = self.data.copy()
+        return result
+    def astype(self, new_dtype):
+        result = Tensor(shape=self.shape, dtype=new_dtype)
+        for i in range(len(self.data)):
+            if new_dtype == "float32":
+                result.data[i] = float(self.data[i])
+            elif new_dtype == "int32":
+                result.data[i] = int(self.data[i])
+            elif new_dtype == "bool":
+                result.data[i] = bool(self.data[i])
+            else:
+                raise Exception("Unsupported dtype")
+        return result
     def T(self):
         pass
     def sum(self, axis=None):
-        pass
+        if axis is None:
+            # Sum all elements
+            total = 0
+            return sum(self.data)
+        if isinstance(axis, tuple):
+            
+            new_shape = self.shape
+            for x in axis:
+                new_shape[x] = 1
+            result_tensor = Tensor(shape=new_shape)
+            result_tensor.data = [0 for _ in range(prod(new_shape))]
+            for i in range(prod(self.shape)):
+                index=flatindex2shapeindex(i, self.shape, self.strides)
+                for x in axis:
+                    index[x] = 0
+                result_tensor.data[i] += self.data[i]
+            return result_tensor
+
 
