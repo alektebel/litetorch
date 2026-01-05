@@ -35,7 +35,8 @@ litetorch/
 │   ├── optim/          # Optimizers
 │   ├── rl/             # Reinforcement learning algorithms
 │   ├── generative/     # Generative AI models (GANs, VAEs, GPT, BERT, etc.)
-│   └── gnn/            # Graph Neural Networks
+│   ├── gnn/            # Graph Neural Networks
+│   └── bayesian/       # Bayesian inference methods (NEW!)
 ├── tests/              # Test files
 └── benchmarks/         # Benchmark scripts
 ```
@@ -138,6 +139,28 @@ litetorch/
 - [ ] **GlobalSumPool** - Global sum pooling
 - [ ] **GlobalAttentionPool** - Attention-based global pooling
 
+### 7. Bayesian Inference (litetorch/bayesian/)
+
+#### Bayesian Regression
+- [x] **BayesianLinearRegression** - Bayesian linear regression with conjugate prior
+- [x] **BayesianRidge** - Bayesian ridge regression with automatic relevance determination
+
+#### Bayesian Neural Networks
+- [x] **BayesianNeuralNetwork** - Bayesian neural network with variational inference
+- [x] **MCDropoutBNN** - Monte Carlo Dropout for Bayesian approximation
+- [x] **VariationalDense** - Variational dense layer for BNN
+
+#### Variational Inference
+- [x] **MeanFieldVariationalInference** - Mean-field variational inference (CAVI)
+- [x] **BlackBoxVariationalInference** - Black box VI with reparameterization trick
+- [x] **StochasticVariationalInference** - Stochastic VI for large-scale inference
+- [x] **AutoEncodingVariationalBayes** - Variational Autoencoder (VAE)
+
+#### MCMC Methods
+- [x] **MetropolisHastings** - Metropolis-Hastings algorithm
+- [x] **GibbsSampler** - Gibbs sampling for multivariate distributions
+- [x] **HamiltonianMonteCarlo** - HMC with leapfrog integrator
+
 ## Testing
 
 Each implementation includes test files in the `tests/` directory:
@@ -149,6 +172,7 @@ Each implementation includes test files in the `tests/` directory:
 - `tests/test_rl_algorithms.py` - Tests for RL algorithms
 - `tests/test_generative.py` - Tests for generative AI models
 - `tests/test_gnn.py` - Tests for graph neural networks
+- `tests/test_bayesian.py` - **NEW!** Tests for Bayesian inference methods (31 tests)
 
 ### Quick Start: Testing Reshape & Sum
 
