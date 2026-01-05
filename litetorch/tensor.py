@@ -31,6 +31,7 @@ def flatindex2shapeindex(index:int, shape:tuple, strides:list)->tuple:
 
 def shapeindex2flatindex(index: tuple, shape:tuple, strides:list)->int:
     ''' Guven a shape index, returns the flat index '''
+
     return sum([ind*s for (ind, s) in zip(index, strides)])
 
 class Tensor():
@@ -164,6 +165,8 @@ class Tensor():
             return result
 
     def __getitem__(self, key):
+        if isinstance(key,slice):
+            return self.__getitem__((key,))
         # When key is another tensor, we would like to do mask indexing, returning a tensor with only the elements where the mask is true
         if isinstance(key, Tensor):
             # This will be a boolean tensor
@@ -394,16 +397,20 @@ class Tensor():
             return sum(self.data)
         if isinstance(axis, tuple):
             
-            new_shape = self.shape
+            new_shape = list(self.shape)
+
             for x in axis:
                 new_shape[x] = 1
-            result_tensor = Tensor(shape=new_shape)
+            result_tensor = Tensor(shape=tuple(new_shape))
             result_tensor.data = [0 for _ in range(prod(new_shape))]
             for i in range(prod(self.shape)):
-                index=flatindex2shapeindex(i, self.shape, self.strides)
+                index=list(flatindex2shapeindex(i, self.shape, self.strides))
                 for x in axis:
                     index[x] = 0
-                result_tensor.data[i] += self.data[i]
+
+                result_index = shapeindex2flatindex(tuple(index), tuple(new_shape), result_tensor.strides)
+                print(result_index)
+                result_tensor.data[result_index] += self.data[i]
             return result_tensor
 
 

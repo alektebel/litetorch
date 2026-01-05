@@ -244,14 +244,6 @@ class TestTensorShape(unittest.TestCase):
 class TestTensorReshape(unittest.TestCase):
     """Test tensor reshape operation."""
     
-    def test_tensor_reshape_not_implemented(self):
-        """Test that reshape is not yet implemented."""
-        t = Tensor(shape=(2, 3))
-        
-        result = t.reshape((3, 2))
-        # Currently returns None (not implemented)
-        self.assertIsNone(result)
-
 
 class TestTensorTranspose(unittest.TestCase):
     """Test tensor transpose operation."""
@@ -268,13 +260,6 @@ class TestTensorTranspose(unittest.TestCase):
 class TestTensorSum(unittest.TestCase):
     """Test tensor sum operation."""
     
-    def test_tensor_sum_not_implemented(self):
-        """Test that sum is not yet implemented."""
-        t = Tensor(shape=(2, 3))
-        
-        result = t.sum()
-        # Currently returns None (not implemented)
-        self.assertIsNone(result)
     
     def test_tensor_sum_with_axis_not_implemented(self):
         """Test that sum with axis is not yet implemented."""
