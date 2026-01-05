@@ -84,19 +84,48 @@ litetorch/
 
 Each implementation includes test files in the `tests/` directory:
 - `tests/test_tensor.py` - Tests for Tensor operations
+- `tests/test_reshape_sum.py` - **NEW!** Comprehensive tests for reshape and sum operations (40 tests)
 - `tests/test_autograd.py` - Tests for automatic differentiation
 - `tests/test_nn_layers.py` - Tests for neural network layers
 - `tests/test_optimizers.py` - Tests for optimizers
 - `tests/test_rl_algorithms.py` - Tests for RL algorithms
 
+### Quick Start: Testing Reshape & Sum
+
+```bash
+# Run comprehensive reshape and sum tests
+python run_tests_benchmarks.py test
+
+# Run all tensor tests
+python run_tests_benchmarks.py test-all
+```
+
+See [RESHAPE_SUM_README.md](RESHAPE_SUM_README.md) for detailed documentation.
+
 ## Benchmarks
 
 Each implementation includes benchmark scripts in the `benchmarks/` directory comparing performance against PyTorch or Stable Baselines 3:
 - `benchmarks/bench_tensor_ops.py` - Benchmark tensor operations vs PyTorch
+- `benchmarks/bench_reshape_sum.py` - **NEW!** Comprehensive benchmarks for reshape and sum vs PyTorch/NumPy
 - `benchmarks/bench_autograd.py` - Benchmark autograd vs PyTorch
 - `benchmarks/bench_nn_layers.py` - Benchmark layers vs PyTorch
 - `benchmarks/bench_optimizers.py` - Benchmark optimizers vs PyTorch
 - `benchmarks/bench_rl_algorithms.py` - Benchmark RL algorithms vs Stable Baselines 3
+
+### Quick Start: Benchmarking Reshape & Sum
+
+```bash
+# Run full benchmarks (takes ~5 minutes)
+python run_tests_benchmarks.py benchmark
+
+# Run quick benchmarks (~30 seconds)
+python run_tests_benchmarks.py benchmark-quick
+
+# Run benchmarks without PyTorch (NumPy only)
+python run_tests_benchmarks.py benchmark-no-pytorch
+```
+
+See [RESHAPE_SUM_README.md](RESHAPE_SUM_README.md) for detailed documentation.
 
 ## Installation
 
@@ -106,8 +135,61 @@ pip install -e .
 
 ## Usage
 
-```python
-import litetorch as lt
+### Basic Tensor Operations
 
-# Example usage will be added as implementations are completed
+```python
+from litetorch.tensor import Tensor
+
+# Create a tensor
+t = Tensor(shape=(2, 3))
+t.data = [1, 2, 3, 4, 5, 6]
+print(f"Shape: {t.shape}")
+print(f"Data: {t.data}")
+
+# Reshape operation
+reshaped = t.reshape((3, 2))
+print(f"Reshaped: {reshaped.shape}")
+
+# Sum operation
+total = t.sum()
+print(f"Sum: {total}")
+```
+
+### Examples
+
+See `examples/reshape_sum_examples.py` for comprehensive examples of reshape and sum operations.
+
+```bash
+python examples/reshape_sum_examples.py
+```
+
+## What's New
+
+### Reshape and Sum Operations (Latest)
+
+We've added comprehensive tests and benchmarks for tensor `reshape` and `sum` operations:
+
+- **40 comprehensive tests** covering all aspects of reshape and sum
+- **Benchmarks** comparing LiteTorch against NumPy and PyTorch
+- **Easy-to-run scripts** for testing and benchmarking
+- **Detailed documentation** in [RESHAPE_SUM_README.md](RESHAPE_SUM_README.md)
+- **Examples** demonstrating practical usage
+
+Key features:
+- ✅ Reshape: 1D↔2D↔3D↔4D↔5D transformations
+- ✅ Reshape: Data integrity preservation  
+- ✅ Reshape: Edge cases (single elements, large tensors, etc.)
+- ✅ Sum: Without axis (fully working)
+- ⚠️ Sum: With axis (partial implementation, documented issues)
+
+**Performance:** LiteTorch is 10-1000x slower than NumPy/PyTorch (pure Python vs C/C++ backend), but offers clear educational value with readable implementation.
+
+Run tests:
+```bash
+python run_tests_benchmarks.py test
+```
+
+Run benchmarks:
+```bash
+python run_tests_benchmarks.py benchmark-quick
 ```
