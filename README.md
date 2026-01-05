@@ -33,7 +33,9 @@ litetorch/
 │   ├── autograd/       # Automatic differentiation
 │   ├── nn/             # Neural network modules
 │   ├── optim/          # Optimizers
-│   └── rl/             # Reinforcement learning algorithms
+│   ├── rl/             # Reinforcement learning algorithms
+│   ├── generative/     # Generative AI models (GANs, VAEs, GPT, BERT, etc.)
+│   └── gnn/            # Graph Neural Networks
 ├── tests/              # Test files
 └── benchmarks/         # Benchmark scripts
 ```
@@ -80,6 +82,62 @@ litetorch/
 - [ ] **REINFORCE** - Policy Gradient algorithm
 - [ ] **Replay Buffer** - Experience replay buffer
 
+### 5. Generative AI Models (litetorch/generative/)
+
+#### Image Generation
+- [ ] **GAN** - Generative Adversarial Network
+- [ ] **DCGAN** - Deep Convolutional GAN
+- [ ] **StyleGAN** - Style-based GAN
+- [ ] **VAE** - Variational Autoencoder
+- [ ] **Diffusion Model** - Denoising Diffusion Probabilistic Model
+
+#### Video Generation
+- [ ] **VideoGAN** - Video generation with 3D convolutions
+- [ ] **VideoVAE** - Video variational autoencoder
+- [ ] **VideoTransformer** - Transformer for video generation
+- [ ] **VideoDiffusion** - Diffusion model for video
+- [ ] **ConditionalVideoGenerator** - Text/image-to-video generation
+
+#### Language Generation
+- [ ] **GPT** - Generative Pre-trained Transformer
+- [ ] **Transformer** - Standard encoder-decoder transformer
+- [ ] **TransformerXL** - Transformer with segment-level recurrence
+- [ ] **CodeGenModel** - Code generation model (Codex-style)
+- [ ] **DialogueModel** - Conversational AI model
+
+#### Encoder/Decoder Models
+- [ ] **BERT** - Bidirectional Encoder Representations from Transformers
+- [ ] **RoBERTa** - Robustly Optimized BERT
+- [ ] **ELECTRA** - Efficiently Learning an Encoder that Classifies Token Replacements Accurately
+- [ ] **Seq2Seq** - Sequence-to-Sequence with attention
+- [ ] **T5** - Text-to-Text Transfer Transformer
+- [ ] **BART** - Bidirectional and Auto-Regressive Transformer
+
+### 6. Graph Neural Networks (litetorch/gnn/)
+
+#### GNN Layers
+- [ ] **GCNLayer** - Graph Convolutional Network layer
+- [ ] **GATLayer** - Graph Attention Network layer
+- [ ] **GraphSAGELayer** - GraphSAGE layer with neighborhood sampling
+- [ ] **GINLayer** - Graph Isomorphism Network layer
+- [ ] **EdgeConvLayer** - Edge convolution layer
+
+#### GNN Models
+- [ ] **GCN** - Graph Convolutional Network for node classification
+- [ ] **GAT** - Graph Attention Network
+- [ ] **GraphSAGE** - Inductive node embedding
+- [ ] **GIN** - Graph Isomorphism Network for graph classification
+- [ ] **GraphTransformer** - Transformer for graphs
+- [ ] **MessagePassingNN** - Generic message passing framework
+- [ ] **TemporalGNN** - Temporal graph neural network
+- [ ] **HeterogeneousGNN** - Heterogeneous graph neural network
+
+#### Pooling Operations
+- [ ] **GlobalMeanPool** - Global mean pooling
+- [ ] **GlobalMaxPool** - Global max pooling
+- [ ] **GlobalSumPool** - Global sum pooling
+- [ ] **GlobalAttentionPool** - Attention-based global pooling
+
 ## Testing
 
 Each implementation includes test files in the `tests/` directory:
@@ -88,6 +146,8 @@ Each implementation includes test files in the `tests/` directory:
 - `tests/test_nn_layers.py` - Tests for neural network layers
 - `tests/test_optimizers.py` - Tests for optimizers
 - `tests/test_rl_algorithms.py` - Tests for RL algorithms
+- `tests/test_generative.py` - Tests for generative AI models
+- `tests/test_gnn.py` - Tests for graph neural networks
 
 ## Benchmarks
 
@@ -97,6 +157,8 @@ Each implementation includes benchmark scripts in the `benchmarks/` directory co
 - `benchmarks/bench_nn_layers.py` - Benchmark layers vs PyTorch
 - `benchmarks/bench_optimizers.py` - Benchmark optimizers vs PyTorch
 - `benchmarks/bench_rl_algorithms.py` - Benchmark RL algorithms vs Stable Baselines 3
+- `benchmarks/bench_generative.py` - Benchmark generative models vs PyTorch
+- `benchmarks/bench_gnn.py` - Benchmark GNN layers vs PyTorch Geometric/DGL
 
 ## Installation
 
