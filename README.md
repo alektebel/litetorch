@@ -166,7 +166,7 @@ litetorch/
 Each implementation includes test files in the `tests/` directory:
 - `tests/test_tensor.py` - Tests for Tensor operations
 - `tests/test_reshape_sum.py` - **NEW!** Comprehensive tests for reshape and sum operations (40 tests)
-- `tests/test_autograd.py` - Tests for automatic differentiation
+- `tests/test_autograd.py` - **NEW!** Comprehensive tests for automatic differentiation (27 tests)
 - `tests/test_nn_layers.py` - Tests for neural network layers
 - `tests/test_optimizers.py` - Tests for optimizers
 - `tests/test_rl_algorithms.py` - Tests for RL algorithms
@@ -174,7 +174,7 @@ Each implementation includes test files in the `tests/` directory:
 - `tests/test_gnn.py` - Tests for graph neural networks
 - `tests/test_bayesian.py` - **NEW!** Tests for Bayesian inference methods (31 tests)
 
-### Quick Start: Testing Reshape & Sum
+### Quick Start: Testing
 
 ```bash
 # Run comprehensive reshape and sum tests
@@ -182,23 +182,29 @@ python run_tests_benchmarks.py test
 
 # Run all tensor tests
 python run_tests_benchmarks.py test-all
+
+# Run autograd tests
+python -m pytest tests/test_autograd.py -v
+
+# Run all tests
+python -m pytest tests/ -v
 ```
 
-See [RESHAPE_SUM_README.md](RESHAPE_SUM_README.md) for detailed documentation.
+See [RESHAPE_SUM_README.md](RESHAPE_SUM_README.md) and [AUTOGRAD_README.md](AUTOGRAD_README.md) for detailed documentation.
 
 ## Benchmarks
 
 Each implementation includes benchmark scripts in the `benchmarks/` directory comparing performance against PyTorch or Stable Baselines 3:
 - `benchmarks/bench_tensor_ops.py` - Benchmark tensor operations vs PyTorch
 - `benchmarks/bench_reshape_sum.py` - **NEW!** Comprehensive benchmarks for reshape and sum vs PyTorch/NumPy
-- `benchmarks/bench_autograd.py` - Benchmark autograd vs PyTorch
+- `benchmarks/bench_autograd.py` - **NEW!** Comprehensive benchmarks for autograd vs PyTorch
 - `benchmarks/bench_nn_layers.py` - Benchmark layers vs PyTorch
 - `benchmarks/bench_optimizers.py` - Benchmark optimizers vs PyTorch
 - `benchmarks/bench_rl_algorithms.py` - Benchmark RL algorithms vs Stable Baselines 3
 - `benchmarks/bench_generative.py` - Benchmark generative models vs PyTorch
 - `benchmarks/bench_gnn.py` - Benchmark GNN layers vs PyTorch Geometric/DGL
 
-### Quick Start: Benchmarking Reshape & Sum
+### Quick Start: Benchmarking
 
 ```bash
 # Run full benchmarks (takes ~5 minutes)
@@ -206,6 +212,12 @@ python run_tests_benchmarks.py benchmark
 
 # Run quick benchmarks (~30 seconds)
 python run_tests_benchmarks.py benchmark-quick
+
+# Run autograd benchmarks
+python benchmarks/bench_autograd.py
+
+# Run autograd benchmarks in quick mode
+QUICK=1 python benchmarks/bench_autograd.py
 
 # Run benchmarks without PyTorch (NumPy only)
 python run_tests_benchmarks.py benchmark-no-pytorch
@@ -251,7 +263,48 @@ python examples/reshape_sum_examples.py
 
 ## What's New
 
-### Reshape and Sum Operations (Latest)
+### Autograd Tests and Benchmarks (Latest)
+
+We've added comprehensive tests and benchmarks for automatic differentiation (autograd):
+
+- **27 comprehensive tests** covering all aspects of autograd functionality
+- **Benchmarks** comparing LiteTorch autograd against PyTorch
+- **Test coverage** includes:
+  - Basic backward pass operations (add, sub, mul, div, power)
+  - Chain rule application in computational graphs
+  - Matrix multiplication gradients
+  - Activation function gradients (ReLU, Sigmoid, Tanh, Softmax)
+  - Gradient accumulation and zero_grad
+  - Edge cases (no_grad, detach, retain_graph)
+  - Neural network backward passes
+- **Benchmark coverage** includes:
+  - Simple backward pass timing
+  - Chain of operations
+  - Matrix multiplication backward
+  - Activation functions backward
+  - Neural network backward pass
+  - Memory usage analysis
+  - Gradient accumulation performance
+
+Run tests:
+```bash
+python -m pytest tests/test_autograd.py -v
+```
+
+Run benchmarks:
+```bash
+python benchmarks/bench_autograd.py
+# Or in quick mode:
+QUICK=1 python benchmarks/bench_autograd.py
+```
+
+**Note:** Tests are currently marked as skipped until the autograd engine is implemented in the Tensor class. The tests define the expected API:
+- `Tensor(shape, requires_grad=True)`
+- `tensor.backward()`
+- `tensor.grad` (gradient storage)
+- `tensor.zero_grad()`
+
+### Reshape and Sum Operations
 
 We've added comprehensive tests and benchmarks for tensor `reshape` and `sum` operations:
 
