@@ -357,12 +357,26 @@ def benchmark_bert():
             max_seq_len = config['max_seq_len']
             num_layers = config['num_layers']
             
-            # Rough parameter count
+            # Rough parameter count calculation
+            # Embeddings: token_emb (vocab_size * hidden_dim) + position_emb (max_seq_len * hidden_dim) + segment_emb (2 * hidden_dim)
             embedding_params = vocab_size * hidden_dim + max_seq_len * hidden_dim + 2 * hidden_dim
-            layer_params = num_layers * (4 * hidden_dim * hidden_dim + 4 * hidden_dim * 3072)
+            
+            # Each transformer layer has:
+            # - Multi-head attention: 4 weight matrices of size (hidden_dim * hidden_dim) for Q, K, V, output
+            # - Feed-forward: 2 weight matrices (hidden_dim * ffn_dim and ffn_dim * hidden_dim)
+            # Using typical ffn_dim = 4 * hidden_dim (BERT standard)
+            ffn_dim = 4 * hidden_dim  # BERT uses 4x expansion in FFN
+            attention_params = 4 * hidden_dim * hidden_dim  # Q, K, V, output projections
+            ffn_params = hidden_dim * ffn_dim + ffn_dim * hidden_dim  # Two FFN layers
+            layer_params = num_layers * (attention_params + ffn_params)
+            
             total_params = embedding_params + layer_params
             
             print(f"{name}: ~{total_params:,} parameters")
+            print(f"  Embeddings: {embedding_params:,}")
+            print(f"  Transformer layers: {layer_params:,}")
+            print(f"  Embeddings: {embedding_params:,}")
+            print(f"  Transformer layers: {layer_params:,}")
     
     except Exception as e:
         print(f"  Note: Full benchmarks will be available after BERT implementation")
