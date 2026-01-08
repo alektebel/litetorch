@@ -24,7 +24,6 @@ from litetorch.tensor import Tensor
 class TestAutogradBasicBackward(unittest.TestCase):
     """Test basic backward pass functionality."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_simple_backward_scalar(self):
         """Test backward pass on simple scalar operation."""
         # Create a tensor with requires_grad=True
@@ -41,7 +40,6 @@ class TestAutogradBasicBackward(unittest.TestCase):
         self.assertIsNotNone(x.grad)
         self.assertEqual(x.grad.data, [2.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_backward_addition(self):
         """Test backward pass for addition."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -61,7 +59,6 @@ class TestAutogradBasicBackward(unittest.TestCase):
         self.assertEqual(x.grad.data, [1.0, 1.0])
         self.assertEqual(y.grad.data, [1.0, 1.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_backward_subtraction(self):
         """Test backward pass for subtraction."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -80,7 +77,6 @@ class TestAutogradBasicBackward(unittest.TestCase):
         self.assertEqual(x.grad.data, [1.0, 1.0])
         self.assertEqual(y.grad.data, [-1.0, -1.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_backward_multiplication(self):
         """Test backward pass for element-wise multiplication."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -99,7 +95,6 @@ class TestAutogradBasicBackward(unittest.TestCase):
         self.assertEqual(x.grad.data, [4.0, 5.0])
         self.assertEqual(y.grad.data, [2.0, 3.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_backward_division(self):
         """Test backward pass for division."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -120,7 +115,6 @@ class TestAutogradBasicBackward(unittest.TestCase):
         self.assertAlmostEqual(y.grad.data[0], -2.0, places=5)
         self.assertAlmostEqual(y.grad.data[1], -4/3, places=5)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_backward_power(self):
         """Test backward pass for power operation."""
         x = Tensor(shape=(3,), requires_grad=True)
@@ -139,7 +133,6 @@ class TestAutogradBasicBackward(unittest.TestCase):
 class TestAutogradChainRule(unittest.TestCase):
     """Test chain rule in computational graphs."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_chain_rule_simple(self):
         """Test chain rule with simple operations."""
         x = Tensor(shape=(1,), requires_grad=True)
@@ -159,7 +152,6 @@ class TestAutogradChainRule(unittest.TestCase):
         # dw/dx = dw/dz * dz/dy * dy/dx = 4 * 1 * 2 = 8
         self.assertEqual(x.grad.data, [8.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_chain_rule_complex(self):
         """Test chain rule with multiple operations."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -181,7 +173,6 @@ class TestAutogradChainRule(unittest.TestCase):
         # = 1 * 1 * 3 * 2*x = 6*x
         self.assertEqual(x.grad.data, [6.0, 12.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_chain_rule_branching(self):
         """Test chain rule with branching computational graph."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -205,7 +196,6 @@ class TestAutogradChainRule(unittest.TestCase):
 class TestAutogradMatrixOperations(unittest.TestCase):
     """Test gradient computation for matrix operations."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_matmul_gradient(self):
         """Test gradient computation for matrix multiplication."""
         # A: (2, 3), B: (3, 2)
@@ -227,7 +217,6 @@ class TestAutogradMatrixOperations(unittest.TestCase):
         self.assertIsNotNone(A.grad.data)
         self.assertIsNotNone(B.grad.data)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_matmul_chain(self):
         """Test gradient through chain of matrix multiplications."""
         # A: (2, 3), B: (3, 2), C: (2, 1)
@@ -256,7 +245,6 @@ class TestAutogradMatrixOperations(unittest.TestCase):
 class TestAutogradActivationFunctions(unittest.TestCase):
     """Test gradient computation for activation functions."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_relu_gradient(self):
         """Test ReLU gradient computation."""
         x = Tensor(shape=(4,), requires_grad=True)
@@ -271,7 +259,6 @@ class TestAutogradActivationFunctions(unittest.TestCase):
         # ReLU gradient: 1 if x > 0, else 0
         self.assertEqual(x.grad.data, [0.0, 0.0, 1.0, 1.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_sigmoid_gradient(self):
         """Test Sigmoid gradient computation."""
         x = Tensor(shape=(3,), requires_grad=True)
@@ -290,7 +277,6 @@ class TestAutogradActivationFunctions(unittest.TestCase):
         # At x=0, sigmoid=0.5, gradient=0.25
         self.assertAlmostEqual(x.grad.data[0], 0.25, places=5)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_tanh_gradient(self):
         """Test Tanh gradient computation."""
         x = Tensor(shape=(3,), requires_grad=True)
@@ -309,7 +295,6 @@ class TestAutogradActivationFunctions(unittest.TestCase):
         # At x=0, tanh=0, gradient=1
         self.assertAlmostEqual(x.grad.data[0], 1.0, places=5)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_softmax_gradient(self):
         """Test Softmax gradient computation."""
         x = Tensor(shape=(3,), requires_grad=True)
@@ -329,7 +314,6 @@ class TestAutogradActivationFunctions(unittest.TestCase):
 class TestAutogradGradientAccumulation(unittest.TestCase):
     """Test gradient accumulation."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_gradient_accumulation_simple(self):
         """Test that gradients accumulate correctly."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -351,7 +335,6 @@ class TestAutogradGradientAccumulation(unittest.TestCase):
         expected = [grad_after_first[0] + 3.0, grad_after_first[1] + 3.0]
         self.assertEqual(x.grad.data, expected)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_zero_grad(self):
         """Test that zero_grad resets gradients."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -374,7 +357,6 @@ class TestAutogradGradientAccumulation(unittest.TestCase):
 class TestAutogradEdgeCases(unittest.TestCase):
     """Test edge cases in automatic differentiation."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_no_grad_context(self):
         """Test computation without gradient tracking."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -389,7 +371,6 @@ class TestAutogradEdgeCases(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             z.backward()
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_detach(self):
         """Test detaching tensor from computational graph."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -405,7 +386,6 @@ class TestAutogradEdgeCases(unittest.TestCase):
         # x should have no gradient since z was detached
         self.assertIsNone(x.grad)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_backward_on_non_scalar(self):
         """Test that backward on non-scalar requires gradient argument."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -424,7 +404,6 @@ class TestAutogradEdgeCases(unittest.TestCase):
         
         self.assertIsNotNone(x.grad)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_in_place_operations(self):
         """Test that in-place operations work correctly."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -439,7 +418,6 @@ class TestAutogradEdgeCases(unittest.TestCase):
         # Gradient should still be computed correctly
         self.assertEqual(x.grad.data, [2.0, 2.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_retain_graph(self):
         """Test retaining computational graph for multiple backward passes."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -463,7 +441,6 @@ class TestAutogradEdgeCases(unittest.TestCase):
 class TestAutogradComputationalGraph(unittest.TestCase):
     """Test complex computational graphs."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_diamond_graph(self):
         """Test computational graph with diamond structure."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -482,7 +459,6 @@ class TestAutogradComputationalGraph(unittest.TestCase):
         # Gradient should be sum of both paths: 2 + 3 = 5
         self.assertEqual(x.grad.data, [5.0, 5.0])
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_multiple_outputs(self):
         """Test tensor used in multiple operations."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -503,7 +479,6 @@ class TestAutogradComputationalGraph(unittest.TestCase):
         expected = [3.0 + 2.0*1.0, 3.0 + 2.0*2.0]
         self.assertEqual(x.grad.data, expected)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_nested_operations(self):
         """Test deeply nested operations."""
         x = Tensor(shape=(2,), requires_grad=True)
@@ -527,7 +502,6 @@ class TestAutogradComputationalGraph(unittest.TestCase):
 class TestAutogradNeuralNetwork(unittest.TestCase):
     """Test autograd in neural network context."""
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_simple_linear_layer(self):
         """Test gradient computation through linear layer."""
         # Input: (batch_size=2, features=3)
@@ -553,7 +527,6 @@ class TestAutogradNeuralNetwork(unittest.TestCase):
         self.assertIsNotNone(W.grad)
         self.assertIsNotNone(b.grad)
     
-    @unittest.skip("Autograd engine not yet implemented")
     def test_two_layer_network(self):
         """Test gradient computation through two-layer network."""
         # Input

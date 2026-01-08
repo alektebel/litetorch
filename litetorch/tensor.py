@@ -43,7 +43,7 @@ class Tensor():
         self.data = [0 for _ in range(total_entries)]
         self.shape = shape
         self.dtype = "float32"
-
+        self._children = set()
         self.strides = []
         if len(shape) > 0:
             self.strides = [0 for _ in range(len(shape))]
@@ -57,9 +57,15 @@ class Tensor():
 
     def __add__(self, other):
         
+
+
         if isinstance(other, (int, float)):
             # Scalar addition
             result = Tensor(shape=self.shape)
+            def _backward(self, other):
+                self.grad = 1
+                other.grad = 1
+                result._children.insert((self, other)) 
             for i in range(len(self.data)):
                 result.data[i] = self.data[i] + other
             return result
@@ -89,6 +95,10 @@ class Tensor():
             result = Tensor(shape=self.shape)
             for i in range(len(self.data)):
                 result.data[i] = self.data[i] + other.data[i]
+            def _backward(self, other):
+                self.grad = other
+                other.grad = self
+                result._children.insert(other, self)
             return result
         elif stride1 != 0 and stride2 == 0:
             # self needs broadcasting
@@ -149,12 +159,28 @@ class Tensor():
     def __sub__(self, other):
         pass
     def __matmul__(self, other):
+
         pass
     def __pow__(self, other):
         pass
     def __mul__(self, other):
-        pass
+        if isinstance(other, (int, float)):
+            # Scalar multiplication
+            result = Tensor(shape=self.shape)
+            for i in range(len(self.data)):
+                result.data[i] = self.data[i] * other
+            return result
+        if isinstance(other, Tensor):
+            if self.shape != other.shape:
+                raise Exception("Shapes should be equal between tensor 1 and tensor 2 from Kronecker product")
+            result = Tensor(shape=self.shape)
+            for i in range(len(self.data)):
+                result.data[i] = self.data[i]*other.data[i]
 
+        def _backward(self, other):
+            self.grad += other*result.grad
+            self._children = 
+        return result
 
     def __eq__(self, other):
         if isinstance(other, (int, float)):
