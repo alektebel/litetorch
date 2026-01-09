@@ -159,6 +159,44 @@ class Tensor():
     def __sub__(self, other):
         pass
     def __matmul__(self, other):
+        '''Matrix multiplication implementation between two tensors, multiplying the last two dimension'''
+        result = Tensor(shape=())
+        # We just need to broadcast over all dimensions except the last two, that we will multiply as matrices. This is:
+        # C_...ij = sum_k A_...ik * B_...kj therefore, just iterate over the dimension k and sum to C.
+        result_shape = list(self.shape)
+        result_shape[-2] = self.shape[-2]
+        result_shape[-1] = other.shape[-1]
+        result.shape = tuple(result_shape)
+        result.strides = []
+        if len(result_shape) > 0:
+            result.strides = [0 for _ in range(len(result_shape))]
+            result.strides[-1] = 1
+            for i in range(len(result_shape)-2, -1, -1):
+                result.strides[i] = result.strides[i+1] * result_shape[i+1]
+        result.data = [0 for _ in range(prod(result_shape))]
+        # Now just iterate over all elements of result and compute the value
+        for i in range(prod(result_shape)):
+            result_index = flatindex2shapeindex(i, result.shape, result.strides)
+            sum_value = 0
+            for k in range(self.shape[-1]):
+                # Compute the corresponding indices in self and other
+                self_index = list(result_index)
+                other_index = list(result_index)
+                self_index[-1] = k
+                other_index[-2] = k
+                flat_self_index = shapeindex2flatindex(tuple(self_index), self.shape, self.strides)
+                flat_other_index = shapeindex2flatindex(tuple(other_index), other.shape, other.strides)
+                sum_value += self.data[flat_self_index] * other.data[flat_other_index]
+            result.data[i] = sum_value
+
+        def _backward(self, other):
+            # Compute gradients for self and other
+            # tensor gradients
+            self.grad = result.grad @ other.T()
+            other.grad = self.T() @ result.grad
+            # Here T means transpose over the last two dimensions
+            result._children.insert((self, other))
+        return result
 
         pass
     def __pow__(self, other):
@@ -175,11 +213,11 @@ class Tensor():
                 raise Exception("Shapes should be equal between tensor 1 and tensor 2 from Kronecker product")
             result = Tensor(shape=self.shape)
             for i in range(len(self.data)):
-                result.data[i] = self.data[i]*other.data[i]
+                result.data[i] += self.data[i]*other.data[i]
 
         def _backward(self, other):
             self.grad += other*result.grad
-            self._children = 
+            self._children .insert((self, other))
         return result
 
     def __eq__(self, other):
@@ -415,7 +453,30 @@ class Tensor():
                 raise Exception("Unsupported dtype")
         return result
     def T(self):
-        pass
+        # Transpose the last two dimensions
+        if len(self.shape) < 2:
+            return self.clone()
+        new_shape = list(self.shape)
+        new_shape[-1], new_shape[-2] = new_shape[-2], new_shape[-1]
+        result = Tensor(shape=tuple(new_shape))
+        result.strides = []
+        if len(new_shape) > 0:
+            result.strides = [0 for _ in range(len(new_shape))]
+            result.strides[-1] = 1
+            for i in range(len(new_shape)-2, -1, -1):
+                result.strides[i] = result.strides[i+1] * new_shape[i+1]
+        for i in range(prod(self.shape)):
+            original_index = flatindex2shapeindex(i, self.shape, self.strides)
+            transposed_index = list(original_index)
+            transposed_index[-1], transposed_index[-2] = transposed_index[-2], transposed_index[-1]
+            flat_transposed_index = shapeindex2flatindex(tuple(transposed_index), tuple(new_shape), result.strides)
+            result.data[flat_transposed_index] = self.data[i]
+        def _backward(self):
+            self.grad = result.T()
+            result._children.insert(self)
+        return result
+    
+
     def sum(self, axis=None):
         if axis is None:
             # Sum all elements
@@ -437,6 +498,22 @@ class Tensor():
                 result_index = shapeindex2flatindex(tuple(index), tuple(new_shape), result_tensor.strides)
                 print(result_index)
                 result_tensor.data[result_index] += self.data[i]
+        def _backward(self):
+            # Generating gradient of 1 tensor with output shape of self and input shape of result tensor
+            # dL/dself = dL/dresult * dresult/dself. dresult/dself? result_{i} means sum{self_{i}}. What is result_{jklmn...}/dself_{ijklmn...}? the response
+            # as result_{jklmn...} contains self_{ijklmn...} only when jklmn... == ijklmn..., otherwise is 0. Therefore, the derivative is 1 when the rest of indices match
+            # these are jklmn... except the ones in axis, that are summed over. Therefore, the derivative is 1 when the rest of indices match, and 0 otherwise.
+            self.grad = Tensor(shape=self.shape)
+            for i in range(prod(self.shape)):
+                index = list(flatindex2shapeindex(i, self.shape, self.strides))
+                for x in axis:
+                    index[x] = 0
+                result_index = shapeindex2flatindex(tuple(index), tuple(new_shape), result_tensor.strides)
+                self.grad.data[i] = result_tensor.data[result_index]
+            result_tensor._children.insert(self)
+
             return result_tensor
+
+
 
 
