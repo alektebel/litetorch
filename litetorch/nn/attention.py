@@ -105,6 +105,14 @@ class ScaledDotProductAttention:
         Returns:
             Array with dropout applied
         """
+        # Handle edge cases
+        if dropout_rate >= 1.0:
+            # If dropout rate is 1.0, all values are dropped
+            return np.zeros_like(x)
+        if dropout_rate <= 0.0:
+            # No dropout
+            return x
+        
         # Note: In a real implementation, this should only apply during training
         mask = np.random.binomial(1, 1 - dropout_rate, size=x.shape)
         return x * mask / (1 - dropout_rate)
