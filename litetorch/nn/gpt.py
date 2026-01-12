@@ -225,8 +225,14 @@ class GPTModel:
         Returns:
             Filtered logits
         """
-        # Get top k values and indices
-        top_k = min(top_k, logits.shape[-1])
+        # Ensure top_k is valid
+        vocab_size = logits.shape[-1]
+        top_k = min(top_k, vocab_size)
+        
+        if top_k == vocab_size:
+            # No filtering needed if we're keeping all tokens
+            return logits
+        
         # Use partition to find the k-th largest value
         # partition returns array partitioned at k-th position
         kth_values = np.partition(logits, -top_k, axis=-1)[:, -top_k]

@@ -93,10 +93,14 @@ class FeedForward:
     
     def _init_weights(self, shape):
         """
-        Initialize weights using Xavier/Glorot initialization.
+        Initialize weights using He initialization for GELU activation.
         
-        Xavier initialization is appropriate for layers with tanh or sigmoid activations.
-        For GELU (which is similar to sigmoid-weighted linear), Xavier is reasonable.
+        He initialization (also called Kaiming initialization) is appropriate for
+        ReLU-like activations including GELU. It scales by sqrt(2/fan_in) to
+        account for the fact that these activations zero out negative values.
+        
+        For GELU, which is smooth and similar to ReLU for positive values,
+        He initialization provides better gradient flow during training.
         
         Args:
             shape: Shape of weight matrix
@@ -104,9 +108,9 @@ class FeedForward:
         Returns:
             Initialized weight matrix
         """
-        # Xavier/Glorot initialization: scale by sqrt(1 / fan_in)
+        # He initialization: scale by sqrt(2 / fan_in)
         fan_in = shape[0]
-        scale = np.sqrt(1.0 / fan_in)
+        scale = np.sqrt(2.0 / fan_in)
         return np.random.randn(*shape) * scale
     
     def forward(self, x):
@@ -154,7 +158,24 @@ class FeedForward:
         return 0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x**3)))
     
     def _apply_dropout(self, x, dropout_rate):
-        """Apply dropout during training."""
+        """
+        Apply dropout during training.
+        
+        Args:
+            x: Input array
+            dropout_rate: Dropout probability
+        
+        Returns:
+            Array with dropout applied
+        """
+        # Handle edge cases
+        if dropout_rate >= 1.0:
+            # If dropout rate is 1.0, all values are dropped
+            return np.zeros_like(x)
+        if dropout_rate <= 0.0:
+            # No dropout
+            return x
+        
         mask = np.random.binomial(1, 1 - dropout_rate, size=x.shape)
         return x * mask / (1 - dropout_rate)
 
