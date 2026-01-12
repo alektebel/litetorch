@@ -227,8 +227,13 @@ class GPTModel:
         """
         # Get top k values and indices
         top_k = min(top_k, logits.shape[-1])
-        indices_to_remove = logits < np.partition(logits, -top_k, axis=-1)[..., -top_k:, np.newaxis]
-        logits[indices_to_remove] = -np.inf
+        # Use partition to find the k-th largest value
+        # partition returns array partitioned at k-th position
+        kth_values = np.partition(logits, -top_k, axis=-1)[:, -top_k]
+        # Expand dimensions for broadcasting
+        kth_values = kth_values[:, np.newaxis]
+        # Mask out values below the k-th largest
+        logits = np.where(logits < kth_values, -np.inf, logits)
         return logits
     
     def _top_p_filtering(self, logits, top_p):

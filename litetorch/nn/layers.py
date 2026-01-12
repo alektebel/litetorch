@@ -92,9 +92,21 @@ class FeedForward:
         self.b2 = np.zeros(hidden_dim)
     
     def _init_weights(self, shape):
-        """Initialize weights using Xavier initialization."""
+        """
+        Initialize weights using Xavier/Glorot initialization.
+        
+        Xavier initialization is appropriate for layers with tanh or sigmoid activations.
+        For GELU (which is similar to sigmoid-weighted linear), Xavier is reasonable.
+        
+        Args:
+            shape: Shape of weight matrix
+        
+        Returns:
+            Initialized weight matrix
+        """
+        # Xavier/Glorot initialization: scale by sqrt(1 / fan_in)
         fan_in = shape[0]
-        scale = np.sqrt(2.0 / fan_in)
+        scale = np.sqrt(1.0 / fan_in)
         return np.random.randn(*shape) * scale
     
     def forward(self, x):
