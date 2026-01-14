@@ -245,76 +245,336 @@ class VideoDiffusion:
     Diffusion model for video generation.
     
     Extends image diffusion models to video by applying diffusion process
-    across both spatial and temporal dimensions.
+    across both spatial and temporal dimensions. Uses 3D U-Net architecture
+    to process video volumes and model temporal coherence.
+    
+    Key Differences from Image Diffusion:
+        1. 3D convolutions instead of 2D (processes frames, height, width)
+        2. Temporal attention mechanisms for frame coherence
+        3. Optional frame conditioning for consistency
+        4. Larger memory requirements due to temporal dimension
+    
+    Architecture Components:
+        - 3D U-Net: Processes (T, H, W, C) video volumes
+        - Temporal Attention: Models dependencies across frames
+        - Spatial Attention: Models spatial relationships within frames
+        - Time Embedding: Conditions on diffusion timestep
+    
+    Training:
+        - Same as image diffusion but with video clips
+        - Can use frame sampling strategies for long videos
+        - Optional temporal augmentation (speed, reverse)
+    
+    Sampling:
+        - Generate entire video volume at once, or
+        - Autoregressive frame generation for long videos
     
     References:
         - Ho et al. (2022): "Video Diffusion Models"
         - Harvey et al. (2022): "Flexible Diffusion Modeling of Long Videos"
+        - Blattmann et al. (2023): "Align your Latents: High-Resolution Video Synthesis"
     """
     
-    def __init__(self, video_shape=(16, 64, 64, 3), timesteps=1000):
+    def __init__(self, video_shape=(16, 64, 64, 3), timesteps=1000, 
+                 beta_start=0.0001, beta_end=0.02):
         """
         Initialize VideoDiffusion.
         
         Args:
             video_shape: Shape of videos (frames, height, width, channels)
-            timesteps: Number of diffusion steps
+            timesteps: Number of diffusion steps (T)
+            beta_start: Starting variance schedule parameter
+            beta_end: Ending variance schedule parameter
         """
         self.video_shape = video_shape
         self.timesteps = timesteps
+        self.beta_start = beta_start
+        self.beta_end = beta_end
         
-        # Noise schedule (same as image diffusion)
-        self.betas = np.linspace(0.0001, 0.02, timesteps)
-        self.alphas = 1.0 - self.betas
-        self.alphas_cumprod = np.cumprod(self.alphas)
+        # Precompute noise schedule (same as image diffusion)
+        self._precompute_schedule()
         
         self.denoising_network = None  # TODO: Implement 3D U-Net
     
-    def build_3d_unet(self):
+    def _precompute_schedule(self):
+        """
+        Precompute noise schedule parameters.
+        
+        Uses same schedule as image diffusion but applies to video volumes.
+        """
+        self.betas = np.linspace(self.beta_start, self.beta_end, self.timesteps)
+        self.alphas = 1.0 - self.betas
+        self.alphas_cumprod = np.cumprod(self.alphas)
+        self.alphas_cumprod_prev = np.concatenate([np.array([1.0]), self.alphas_cumprod[:-1]])
+        
+        # Precompute coefficients
+        self.sqrt_alphas_cumprod = np.sqrt(self.alphas_cumprod)
+        self.sqrt_one_minus_alphas_cumprod = np.sqrt(1.0 - self.alphas_cumprod)
+        self.sqrt_recip_alphas = np.sqrt(1.0 / self.alphas)
+        self.posterior_variance = (
+            self.betas * (1.0 - self.alphas_cumprod_prev) / (1.0 - self.alphas_cumprod)
+        )
+    
+    def build_3d_unet(self, base_channels=64, channel_multipliers=(1, 2, 4, 8),
+                      use_temporal_attention=True, use_spatial_attention=True):
         """
         Build 3D U-Net for video denoising.
         
-        Extends 2D U-Net to 3D to handle video data.
-        Uses 3D convolutions and processes full video volumes.
+        Extends 2D U-Net to 3D to handle video data. The architecture processes
+        videos as 5D tensors: (batch, frames, height, width, channels).
         
-        Architecture:
-            Input: Noisy video + timestep embedding
-            3D Encoder blocks with downsampling
-            Bottleneck
-            3D Decoder blocks with upsampling + skip connections
-            Output: Predicted noise
+        Architecture Components:
+            1. 3D Convolutions:
+               - Conv3D(T, H, W) processes all three dimensions
+               - Separable convolutions: (1, 3, 3) + (3, 1, 1) for efficiency
+            
+            2. Temporal Attention:
+               - Self-attention across frame dimension
+               - Models long-range temporal dependencies
+               - Applied at lower resolutions for efficiency
+            
+            3. Spatial Attention:
+               - Self-attention within each frame
+               - Models spatial relationships
+               - Applied at lower resolutions
+            
+            4. Skip Connections:
+               - Connect encoder and decoder at each level
+               - Preserve fine details from input
+            
+            5. Time Embedding:
+               - Sinusoidal encoding of diffusion timestep
+               - Injected into each residual block
+        
+        Encoder Path:
+            Input: (B, T, H, W, C)
+            Level 1: Conv3D(base_channels) -> (B, T, H, W, 64)
+            Level 2: Conv3D(base_channels*2) + Downsample -> (B, T, H/2, W/2, 128)
+            Level 3: Conv3D(base_channels*4) + Downsample + Attention -> (B, T, H/4, W/4, 256)
+            Level 4: Conv3D(base_channels*8) + Downsample + Attention -> (B, T, H/8, W/8, 512)
+        
+        Bottleneck:
+            ResBlock + Temporal Attention + Spatial Attention + ResBlock
+        
+        Decoder Path:
+            Mirrors encoder with upsampling and skip connections
+        
+        Args:
+            base_channels: Number of channels at first level (default: 64)
+            channel_multipliers: Channel multipliers at each resolution
+            use_temporal_attention: Whether to use temporal attention (default: True)
+            use_spatial_attention: Whether to use spatial attention (default: True)
         """
         # TODO: Implement 3D U-Net architecture
+        # Components to implement:
+        #
+        # 1. TimeEmbedding: 
+        #    - Sinusoidal encoding of timestep
+        #    - MLP projection to embedding dimension
+        #
+        # 2. Conv3DBlock:
+        #    - Conv3D -> GroupNorm3D -> SiLU activation
+        #    - Time embedding injection via adaptive group norm
+        #
+        # 3. ResBlock3D:
+        #    - Two Conv3DBlocks with residual connection
+        #    - Optionally factorize 3D conv into (1,3,3) + (3,1,1)
+        #
+        # 4. TemporalAttention:
+        #    - Reshape (B, T, H, W, C) -> (B*H*W, T, C)
+        #    - Apply multi-head self-attention over frame dimension
+        #    - Reshape back to (B, T, H, W, C)
+        #
+        # 5. SpatialAttention:
+        #    - Reshape (B, T, H, W, C) -> (B*T, H*W, C)
+        #    - Apply multi-head self-attention over spatial dimension
+        #    - Reshape back to (B, T, H, W, C)
+        #
+        # 6. DownBlock3D:
+        #    - ResBlock3D x N
+        #    - Optional Temporal/Spatial Attention
+        #    - Downsample: Conv3D with stride (1, 2, 2)
+        #
+        # 7. UpBlock3D:
+        #    - Upsample: ConvTranspose3D with stride (1, 2, 2)
+        #    - Concatenate with skip connection
+        #    - ResBlock3D x N
+        #    - Optional Temporal/Spatial Attention
+        #
+        # Full Architecture:
+        # encoder_outputs = []
+        # x = initial_conv(video)
+        # for level in encoder_levels:
+        #     x = down_block(x, time_emb)
+        #     encoder_outputs.append(x)
+        # x = bottleneck(x, time_emb)
+        # for level, skip in zip(decoder_levels, reversed(encoder_outputs)):
+        #     x = up_block(x, skip, time_emb)
+        # output = final_conv(x)
         pass
     
-    def train_step(self, videos):
+    def forward_diffusion(self, x, t):
+        """
+        Apply forward diffusion process to add noise to videos.
+        
+        Same as image diffusion but applied to video volumes:
+            x_t = √ᾱ_t * x_0 + √(1 - ᾱ_t) * ε
+        
+        Args:
+            x: Clean videos of shape (batch_size, frames, height, width, channels)
+            t: Timesteps of shape (batch_size,)
+            
+        Returns:
+            Tuple of (noisy_videos, noise)
+        """
+        # TODO: Implement forward diffusion
+        # 1. Sample noise
+        # noise = np.random.randn(*x.shape)
+        #
+        # 2. Get schedule values
+        # sqrt_alpha_t = self.sqrt_alphas_cumprod[t]
+        # sqrt_one_minus_alpha_t = self.sqrt_one_minus_alphas_cumprod[t]
+        #
+        # 3. Reshape for broadcasting (B, 1, 1, 1, 1)
+        # sqrt_alpha_t = sqrt_alpha_t.reshape(-1, 1, 1, 1, 1)
+        # sqrt_one_minus_alpha_t = sqrt_one_minus_alpha_t.reshape(-1, 1, 1, 1, 1)
+        #
+        # 4. Apply reparameterization trick
+        # noisy_x = sqrt_alpha_t * x + sqrt_one_minus_alpha_t * noise
+        #
+        # return noisy_x, noise
+        pass
+    
+    def train_step(self, videos, optimizer=None):
         """
         Perform one training step.
         
-        Same training procedure as image diffusion but with video data.
+        Same training procedure as image diffusion but with video clips:
+        1. Sample random timesteps
+        2. Add noise to videos
+        3. Predict noise using 3D U-Net
+        4. Compute MSE loss
+        5. Backpropagate
         
         Args:
-            videos: Batch of clean video sequences
+            videos: Batch of clean video sequences of shape 
+                   (batch_size, frames, height, width, channels)
+            optimizer: Optional optimizer for parameter updates
             
         Returns:
             Loss value
         """
         # TODO: Implement training step
+        # 1. Sample random timesteps
+        # batch_size = videos.shape[0]
+        # t = np.random.randint(0, self.timesteps, size=batch_size)
+        #
+        # 2. Apply forward diffusion
+        # noisy_videos, noise = self.forward_diffusion(videos, t)
+        #
+        # 3. Predict noise
+        # predicted_noise = self.denoising_network(noisy_videos, t)
+        #
+        # 4. Compute loss
+        # loss = np.mean((noise - predicted_noise) ** 2)
+        #
+        # 5. Update parameters
+        # if optimizer:
+        #     optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
+        #
+        # return loss
         pass
     
-    def generate(self, num_videos=1):
+    def denoise_step(self, x_t, t, add_noise=True):
+        """
+        Perform one reverse diffusion step for video.
+        
+        Same as image diffusion denoising but for video volumes.
+        
+        Args:
+            x_t: Noisy video at timestep t
+            t: Current timestep
+            add_noise: Whether to add noise
+            
+        Returns:
+            Denoised video at timestep t-1
+        """
+        # TODO: Implement denoising step (same as image diffusion)
+        pass
+    
+    def generate(self, num_videos=1, show_progress=False):
         """
         Generate videos by iterative denoising.
         
-        Start from random noise and iteratively denoise to produce video.
+        Start from random noise and iteratively denoise to produce coherent
+        video sequences.
         
         Args:
             num_videos: Number of videos to generate
+            show_progress: If True, print progress
             
         Returns:
-            Generated video sequences
+            Generated video sequences of shape 
+            (num_videos, frames, height, width, channels)
         """
         # TODO: Implement video generation
+        # 1. Start with random noise
+        # x = np.random.randn(num_videos, *self.video_shape)
+        #
+        # 2. Iteratively denoise
+        # for t in reversed(range(self.timesteps)):
+        #     if show_progress and t % 100 == 0:
+        #         print(f"Denoising step {t}/{self.timesteps}")
+        #     
+        #     t_batch = np.full(num_videos, t)
+        #     x = self.denoise_step(x, t_batch, add_noise=(t > 0))
+        #
+        # 3. Return generated videos
+        # return x
+        pass
+    
+    def generate_autoregressive(self, num_frames=None, seed_frames=None, 
+                               overlap=4, show_progress=False):
+        """
+        Generate long videos autoregressively.
+        
+        For videos longer than video_shape[0], generate in chunks and
+        stitch together with overlapping frames for smooth transitions.
+        
+        Args:
+            num_frames: Total number of frames to generate
+            seed_frames: Optional initial frames to condition on
+            overlap: Number of overlapping frames between chunks
+            show_progress: If True, print progress
+            
+        Returns:
+            Generated long video sequence
+        """
+        # TODO: Implement autoregressive video generation
+        # 1. Initialize with seed frames or noise
+        # 2. Generate first chunk
+        # 3. For each subsequent chunk:
+        #    - Use last 'overlap' frames from previous chunk
+        #    - Generate next chunk conditioned on these frames
+        #    - Blend overlapping region
+        # 4. Concatenate all chunks
+        pass
+    
+    def interpolate_videos(self, video1, video2, num_steps=10):
+        """
+        Interpolate between two videos in latent space.
+        
+        Args:
+            video1: First video
+            video2: Second video
+            num_steps: Number of interpolation steps
+            
+        Returns:
+            Sequence of interpolated videos
+        """
+        # TODO: Implement video interpolation in latent space
         pass
 
 
