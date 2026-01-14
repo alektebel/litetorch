@@ -99,12 +99,16 @@ litetorch/
 - [ ] **VideoDiffusion** - Diffusion model for video
 - [ ] **ConditionalVideoGenerator** - Text/image-to-video generation
 
-#### Language Generation
-- [ ] **GPT** - Generative Pre-trained Transformer
-- [ ] **Transformer** - Standard encoder-decoder transformer
-- [ ] **TransformerXL** - Transformer with segment-level recurrence
-- [ ] **CodeGenModel** - Code generation model (Codex-style)
-- [ ] **DialogueModel** - Conversational AI model
+#### Language Generation (✅ COMPLETE!)
+- [x] **GPT** - Generative Pre-trained Transformer (FULLY IMPLEMENTED!)
+- [x] **Attention Mechanisms** - Scaled dot-product and multi-head attention
+- [x] **Transformer Blocks** - Complete decoder blocks with self-attention
+- [x] **Position Encodings** - Learned and sinusoidal embeddings
+- [x] **Text Generation** - Autoregressive sampling with temperature, top-k, top-p
+- [ ] **Transformer** - Standard encoder-decoder transformer (template available)
+- [ ] **TransformerXL** - Transformer with segment-level recurrence (template available)
+- [ ] **CodeGenModel** - Code generation model (template available)
+- [ ] **DialogueModel** - Conversational AI model (template available)
 
 #### Encoder/Decoder Models
 - [ ] **BERT** - Bidirectional Encoder Representations from Transformers
@@ -263,7 +267,52 @@ python examples/reshape_sum_examples.py
 
 ## What's New
 
-### Autograd Tests and Benchmarks (Latest)
+### LLM Implementation (Latest) 🚀
+
+We've added a **complete, working implementation of GPT** (Generative Pre-trained Transformer) from scratch!
+
+- **Complete GPT architecture** with attention mechanisms, transformer blocks, and text generation
+- **24 comprehensive tests** covering all components (all passing ✅)
+- **Performance benchmarks** comparing implementation efficiency
+- **8 detailed examples** showing different use cases
+- **Full documentation** with architecture diagrams and API reference
+
+**Implemented Components:**
+- ✅ Scaled dot-product attention
+- ✅ Multi-head attention with parallel heads
+- ✅ Transformer decoder blocks with residual connections
+- ✅ Layer normalization and feed-forward networks
+- ✅ Token and position embeddings (learned)
+- ✅ Causal masking for autoregressive generation
+- ✅ Complete GPT model with forward pass and loss computation
+- ✅ Text generation with temperature, top-k, and top-p sampling
+
+**Files Added:**
+```
+litetorch/nn/attention.py      # Attention mechanisms (340 lines)
+litetorch/nn/layers.py         # Core layers (338 lines)
+litetorch/nn/gpt.py           # Complete GPT model (426 lines)
+tests/test_llm.py             # Comprehensive tests (506 lines, 24 tests)
+benchmarks/bench_llm.py       # Performance benchmarks (377 lines)
+examples/llm_examples.py      # Usage examples (326 lines, 8 examples)
+LLM_README.md                 # Complete documentation (417 lines)
+```
+
+**Quick Start:**
+```bash
+# Run tests
+python -m pytest tests/test_llm.py -v
+
+# Run examples
+python examples/llm_examples.py
+
+# Run benchmarks
+QUICK=1 python benchmarks/bench_llm.py
+```
+
+See [LLM_README.md](LLM_README.md) for complete documentation and examples.
+
+### Autograd Tests and Benchmarks
 
 We've added comprehensive tests and benchmarks for automatic differentiation (autograd):
 
