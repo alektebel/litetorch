@@ -117,11 +117,6 @@ litetorch/
 - [ ] **VideoTransformer** - Transformer for video generation (template)
 - [x] **VideoDiffusion** - Diffusion model for video (✅ Enhanced template with 3D U-Net details!)
 - [ ] **ConditionalVideoGenerator** - Text/image-to-video generation (template)
-- [ ] **VideoGAN** - Video generation with 3D convolutions
-- [ ] **VideoVAE** - Video variational autoencoder
-- [ ] **VideoTransformer** - Transformer for video generation
-- [ ] **VideoDiffusion** - Diffusion model for video
-- [ ] **ConditionalVideoGenerator** - Text/image-to-video generation
 
 #### Language Generation (✅ COMPLETE!)
 - [x] **GPT** - Generative Pre-trained Transformer (FULLY IMPLEMENTED!)
