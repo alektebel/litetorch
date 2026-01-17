@@ -52,11 +52,10 @@ litetorch/
 - [ ] **Reduction operations** - sum, mean, max, min
 
 ### 2. Neural Network Layers (litetorch/nn/)
+
+#### Core Layers
 - [ ] **Linear** - Fully connected layer
-- [ ] **Conv2d** - 2D Convolutional layer
-- [ ] **MaxPool2d** - 2D Max pooling
 - [ ] **Dropout** - Dropout regularization
-- [ ] **BatchNorm2d** - Batch normalization
 - [ ] **ReLU** - Rectified Linear Unit activation
 - [ ] **Sigmoid** - Sigmoid activation
 - [ ] **Tanh** - Hyperbolic tangent activation
@@ -65,6 +64,26 @@ litetorch/
 - [ ] **Sequential** - Sequential container for layers
 - [ ] **MSELoss** - Mean Squared Error loss
 - [ ] **CrossEntropyLoss** - Cross-entropy loss
+
+#### CNN Layers (✅ Templates Added!)
+- [x] **Conv2d** - 2D Convolutional layer (template with detailed implementation guide)
+- [x] **MaxPool2d** - 2D Max pooling (template)
+- [x] **AvgPool2d** - 2D Average pooling (template)
+- [x] **BatchNorm2d** - Batch normalization (template)
+- [x] **Dropout2d** - 2D Dropout for CNNs (template)
+
+#### CNN Building Blocks (✅ Templates Added!)
+- [x] **VGGBlock** - VGG-style convolutional block
+- [x] **ResidualBlock** - Residual block for ResNet
+- [x] **BottleneckBlock** - Bottleneck block for deeper ResNets
+- [x] **InceptionModule** - Inception module from GoogLeNet
+- [x] **DepthwiseSeparableConv2d** - Efficient convolution for mobile networks
+
+#### CNN Architectures (✅ Templates Added!)
+- [x] **LeNet5** - Classic CNN for digit recognition
+- [x] **AlexNet** - Deep CNN for ImageNet classification
+- [x] **VGG** - Very deep CNN with small filters
+- [x] **ResNet** - Residual networks (ResNet-18, 34, 50, 101, 152)
 
 ### 3. Optimizers (litetorch/optim/)
 - [ ] **SGD** - Stochastic Gradient Descent
@@ -86,18 +105,18 @@ litetorch/
 ### 5. Generative AI Models (litetorch/generative/)
 
 #### Image Generation
-- [ ] **GAN** - Generative Adversarial Network
-- [ ] **DCGAN** - Deep Convolutional GAN
-- [ ] **StyleGAN** - Style-based GAN
-- [ ] **VAE** - Variational Autoencoder
-- [ ] **Diffusion Model** - Denoising Diffusion Probabilistic Model
+- [ ] **GAN** - Generative Adversarial Network (template)
+- [ ] **DCGAN** - Deep Convolutional GAN (template)
+- [ ] **StyleGAN** - Style-based GAN (template)
+- [ ] **VAE** - Variational Autoencoder (template)
+- [x] **Diffusion Model** - Denoising Diffusion Probabilistic Model (✅ Enhanced template with detailed implementation guide!)
 
 #### Video Generation
-- [ ] **VideoGAN** - Video generation with 3D convolutions
-- [ ] **VideoVAE** - Video variational autoencoder
-- [ ] **VideoTransformer** - Transformer for video generation
-- [ ] **VideoDiffusion** - Diffusion model for video
-- [ ] **ConditionalVideoGenerator** - Text/image-to-video generation
+- [ ] **VideoGAN** - Video generation with 3D convolutions (template)
+- [ ] **VideoVAE** - Video variational autoencoder (template)
+- [ ] **VideoTransformer** - Transformer for video generation (template)
+- [x] **VideoDiffusion** - Diffusion model for video (✅ Enhanced template with 3D U-Net details!)
+- [ ] **ConditionalVideoGenerator** - Text/image-to-video generation (template)
 
 #### Language Generation (✅ COMPLETE!)
 - [x] **GPT** - Generative Pre-trained Transformer (FULLY IMPLEMENTED!)

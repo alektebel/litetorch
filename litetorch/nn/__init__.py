@@ -6,6 +6,7 @@ This module contains neural network components including:
 - Core layers (LayerNorm, FeedForward, Embeddings, etc.)
 - Transformer blocks
 - Complete GPT model implementation
+- CNN layers and architectures (Conv2d, ResNet, VGG, etc.)
 """
 
 # Import attention mechanisms
@@ -29,6 +30,24 @@ from litetorch.nn.layers import (
 # Import complete models
 from litetorch.nn.gpt import GPTModel
 
+# Import CNN layers and architectures
+from litetorch.nn.cnn import (
+    Conv2d,
+    MaxPool2d,
+    AvgPool2d,
+    BatchNorm2d,
+    Dropout2d,
+    VGGBlock,
+    ResidualBlock,
+    BottleneckBlock,
+    InceptionModule,
+    DepthwiseSeparableConv2d,
+    LeNet5,
+    AlexNet,
+    VGG,
+    ResNet,
+)
+
 __all__ = [
     # Attention
     'ScaledDotProductAttention',
@@ -44,4 +63,21 @@ __all__ = [
     'TransformerBlock',
     # Models
     'GPTModel',
+    # CNN Layers
+    'Conv2d',
+    'MaxPool2d',
+    'AvgPool2d',
+    'BatchNorm2d',
+    'Dropout2d',
+    # CNN Blocks
+    'VGGBlock',
+    'ResidualBlock',
+    'BottleneckBlock',
+    'InceptionModule',
+    'DepthwiseSeparableConv2d',
+    # CNN Architectures
+    'LeNet5',
+    'AlexNet',
+    'VGG',
+    'ResNet',
 ]
